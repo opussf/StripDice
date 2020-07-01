@@ -16,6 +16,79 @@ COLOR_NEON_BLUE = "|cff4d4dff";
 COLOR_END = "|r";
 
 StripDice = {}
+StripDice.players = {}
+
+StripDice_options = {}
+
+function StripDice.Print( msg, showName )
+	-- print to the chat frame
+	-- set showName to false to suppress the addon name printing
+	if (showName == nil) or (showName) then
+		msg = COLOR_NEON_BLUE.."StripDice> "..COLOR_END..msg
+	end
+	DEFAULT_CHAT_FRAME:AddMessage( msg )
+end
+function StripDice.GetNameFromIndex( index )
+	StripDice.lookupPre = StripDice.lookupPre or "PARTY"
+	if index > 4 then
+		StripDice.lookupPre = "RAID"
+	end
+	local lookupString = StripDice.lookupPre..index
+	return GetUnitName( lookupString ) or "NotSet"
+end
+
+function StripDice.OnLoad()
+	StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
+	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
+end
+function StripDice.VARIABLES_LOADED()
+	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
+end
+
+function StripDice.GROUP_ROSTER_UPDATE()
+	StripDice.players = {}
+	local NumGroupMembers = GetNumGroupMembers()
+	StripDice.Print( "There are now "..NumGroupMembers.." in your group." )
+	for i = 1, GetNumGroupMembers() do
+		local name = StripDice.GetNameFromIndex( i )
+
+
+	end
+
+end
+---------
+
+
+
+
+--[[
+
+
+	-- code for when party members are changed
+	--
+	Didit.Debug( "GROUP_ROSTER_UPDATE" )
+	-- scan the players
+	Screenshot()
+
+	for i = 1, GetNumGroupMembers() do
+		local lookupString = Didit.lookupPre..i
+		local unitName = GetUnitName( lookupString ) or "NotSet"
+		Didit.Debug( ("unitName: %s"):format( unitName or "Not Set" ) )
+		if not Didit_players[unitName] then
+			Didit_players[unitName] = {}
+			Didit.Print( ("init player: %s"):format( unitName ) )
+		end
+		if Didit.statisticID and not Didit_players[unitName][Didit.statisticID] then
+			Didit.Print( ("  I haz a statisticID(%s) and need to init %s"):format( Didit.statisticID, unitName ) )
+			Didit_players[unitName][Didit.statisticID] = { Started = "Yes" }
+		end
+	end
+	if not Didit_players[Didit.myName] then
+		Didit_players[Didit.myName] = {}
+	end
+]]
+
+--[[
 
 
 function Vic.OnLoad()
@@ -140,3 +213,4 @@ end
 function Vic.Command(msg)
 	InterfaceOptionsFrame_OpenToCategory("Victorious Reporter");
 end
+]]

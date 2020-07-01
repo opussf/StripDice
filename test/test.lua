@@ -13,6 +13,10 @@ function test.before()
 end
 function test.after()
 end
+
+function test.test_makeParty()
+
+end
 --[[
 function test.showCharList()
 	--if true then return end
