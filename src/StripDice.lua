@@ -16,9 +16,20 @@ COLOR_NEON_BLUE = "|cff4d4dff";
 COLOR_END = "|r";
 
 StripDice = {}
-StripDice.players = {}
+StripDice_players = {}
 
-StripDice_options = {}
+StripDice_options = { ["lowIcon"] = "cross", ["highIcon"] = "star" }
+
+StripDice.raidIconValues = {
+	["star"] = 1,
+	["circle"] = 2,
+	["diamond"] = 3,
+	["triangle"] = 4,
+	["moon"] = 5,
+	["square"] = 6,
+	["cross"] = 7,
+	["skull"] = 8,
+}
 
 function StripDice.Print( msg, showName )
 	-- print to the chat frame
@@ -46,15 +57,35 @@ function StripDice.VARIABLES_LOADED()
 end
 
 function StripDice.GROUP_ROSTER_UPDATE()
-	StripDice.players = {}
 	local NumGroupMembers = GetNumGroupMembers()
 	StripDice.Print( "There are now "..NumGroupMembers.." in your group." )
-	for i = 1, GetNumGroupMembers() do
-		local name = StripDice.GetNameFromIndex( i )
-
-
+	if( NumGroupMembers == 0 ) then
+		StripDice.Print( "Resetting and clearing player listing." )
+		StripDice_players = {}
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SAY" )
+	elseif( NumGroupMembers > 0 ) then
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_SYSTEM" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_SAY" )
+		for i = 1, GetNumGroupMembers() do
+			local name = StripDice.GetNameFromIndex( i )
+			StripDice_players[name] = StripDice_players[name] or {}
+		end
+	end
+end
+function StripDice.CHAT_MSG_SAY( ... )
+	msg, language, _, _, other = ...
+	msg = string.tolower( msg )
+	if( string.find( msg, "roll" ) ) then
+		StripDice.Print( "A roll has been started." )
+		StripDice.Print( "other: "..other.." language: "..language )
 	end
 
+end
+function StripDice.CHAT_MSG_SYSTEM( ... )
+	roll = ...
+	who, roll, low, high = string.find( roll, "(%a+) rolls (%d+) %((%d+) %- (%d+)%)")
+	StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
 end
 ---------
 
