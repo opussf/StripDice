@@ -51,6 +51,8 @@ end
 function StripDice.OnLoad()
 	StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
 	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
+	StripDiceFrame:RegisterEvent( "PLAYER_ENTERING_WORLD" )
+	StripDice.myName = UnitName( "player" )
 end
 function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
@@ -64,28 +66,56 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDice_players = {}
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SAY" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY_LEADER" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_RAID" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_RAID_LEADER" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_LEADER" )
+
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_YELL" )
 	elseif( NumGroupMembers > 0 ) then
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SAY" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_PARTY" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_PARTY_LEADER" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_RAID" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_RAID_LEADER" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_LEADER" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_YELL" )
+		StripDice_player[ StripDice.myName ] = {}
 		for i = 1, GetNumGroupMembers() do
 			local name = StripDice.GetNameFromIndex( i )
 			StripDice_players[name] = StripDice_players[name] or {}
 		end
 	end
 end
+StripDice.PLAYER_ENTERING_WORLD = StripDice.GROUP_ROSTER_UPDATE
 function StripDice.CHAT_MSG_SAY( ... )
-	msg, language, _, _, other = ...
-	msg = string.tolower( msg )
+	_, msg, language, _, _, other = ...
+	StripDice.Print( "msg:"..msg )
+	msg = string.lower( msg )
 	if( string.find( msg, "roll" ) ) then
 		StripDice.Print( "A roll has been started." )
 		StripDice.Print( "other: "..other.." language: "..language )
 	end
-
 end
+StripDice.CHAT_MSG_PARTY = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_PARTY_LEADER = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_RAID = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_RAID_LEADER = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_INSTANCE = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_INSTANCE_LEADER = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_YELL = StripDice.CHAT_MSG_SAY
+
 function StripDice.CHAT_MSG_SYSTEM( ... )
-	roll = ...
-	who, roll, low, high = string.find( roll, "(%a+) rolls (%d+) %((%d+) %- (%d+)%)")
-	StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
+	_, roll = ...
+	StripDice.Print( roll )
+	found, _, who, roll, low, high = string.find( roll, "(%a+) rolls (%d+) %((%d+)%-(%d+)%)")
+	if( found ) then
+		StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
+	end
 end
 ---------
 
