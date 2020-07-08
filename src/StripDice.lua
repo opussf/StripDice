@@ -117,11 +117,11 @@ StripDice.CHAT_MSG_YELL = StripDice.CHAT_MSG_SAY
 
 function StripDice.CHAT_MSG_SYSTEM( ... )
 	_, roll = ...
-	StripDice.Print( roll )
+	--StripDice.Print( roll )
 	found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
 	if( found ) then
 		roll = tonumber( roll )
-		StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
+		--StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
 		if( StripDice.currentGame ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
 				DoEmote( "Bonk", who )
@@ -139,7 +139,7 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 				if( rolled == StripDice.max ) then StripDice.maxWho = who end
 			end
 			--StripDice.Print( "Set min on "..StripDice.minWho )
-			if( StripDice_optins.lowIcon ) then SetRaidTarget( StripDice.minWho, StripDice_options.lowIcon ) end
+			if( StripDice_options.lowIcon ) then SetRaidTarget( StripDice.minWho, StripDice_options.lowIcon ) end
 			if( StripDice_options.highIcon ) then SetRaidTarget( StripDice.maxWho, StripDice_options.highIcon ) end
 		end
 	end
