@@ -94,10 +94,10 @@ function StripDice.CHAT_MSG_SAY( ... )
 	msg = string.lower( msg )
 	if( string.find( msg, "roll" ) ) then
 		--StripDice.Print( "msg:"..msg )
-		StripDice.Print( "A roll has been started." )
+
 		--StripDice.Print( "other: "..other.." language: "..language )
 		StripDice.currentGame = time()
-		StripDice.Print( "Game: "..StripDice.currentGame )
+		StripDice.Print( "A roll has been started.  Game: "..StripDice.currentGame )
 		StripDice_games[ StripDice.currentGame ] = {}
 		if( StripDice.minWho ) then SetRaidTarget( StripDice.minWho, 0 ) end
 		StripDice.min = nil
