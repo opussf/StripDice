@@ -124,7 +124,7 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 		--StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
 		if( StripDice.currentGame ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
-				DoEmote( "Bonk", who )
+				DoEmote( "No", who )
 				StripDice.Print( who.." has already rolled." )
 			else
 				StripDice_games[StripDice.currentGame][who] = roll
