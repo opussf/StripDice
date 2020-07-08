@@ -105,6 +105,16 @@ function StripDice.CHAT_MSG_SAY( ... )
 		if( StripDice.maxWho ) then SetRaidTarget( StripDice.maxWho, 0 ) end
 		StripDice.max = nil
 		StripDice.maxWho = nil
+		local pruneCount = 0
+		for gameTS in pairs( StripDice_games ) do
+			if( gameTS + 86400 < StripDice.currentGame ) then
+				StripDice_games[gameTS] = nil
+				pruneCount = pruneCount + 1
+			end
+		end
+		if( pruneCount > 0 ) then
+			StripDice.Print( "Pruned "..pruneCount.." old games." )
+		end
 	end
 end
 StripDice.CHAT_MSG_PARTY = StripDice.CHAT_MSG_SAY
