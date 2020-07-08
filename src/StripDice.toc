@@ -4,6 +4,6 @@
 ## Author: opussf
 ## Version: @VERSION@
 ## Description: Places a raid icon on both the high roller, and the low roller in a game of dice.
-## SavedVariables: StripDice_options StripDice_players
+## SavedVariables: StripDice_options StripDice_games
 StripDice.lua
 StripDice.xml

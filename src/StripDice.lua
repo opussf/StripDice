@@ -16,7 +16,11 @@ COLOR_NEON_BLUE = "|cff4d4dff";
 COLOR_END = "|r";
 
 StripDice = {}
-StripDice_players = {}
+StripDice_games = {}
+--	[ts] = {    -- for a game
+--		[player] = roll,
+--	}
+StripDice.currentGame = nil
 
 StripDice_options = { ["lowIcon"] = 1, ["highIcon"] = 7 }
 
@@ -52,7 +56,7 @@ function StripDice.OnLoad()
 	StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
 	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
 	StripDiceFrame:RegisterEvent( "PLAYER_ENTERING_WORLD" )
-	StripDice.myName = UnitName( "player" )
+	--StripDice.myName = UnitName( "player" )
 end
 function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
@@ -61,9 +65,8 @@ end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
 	StripDice.Print( "There are now "..NumGroupMembers.." in your group." )
-	if( NumGroupMembers == 0 ) then
+	if( NumGroupMembers == 0 ) then  -- turn off listening
 		StripDice.Print( "Resetting and clearing player listing." )
-		StripDice_players = {}
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY" )
@@ -72,7 +75,6 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_RAID_LEADER" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
-
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_YELL" )
 	elseif( NumGroupMembers > 0 ) then
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SYSTEM" )
@@ -84,21 +86,25 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_CHAT" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_YELL" )
-		StripDice_players[ StripDice.myName ] = {}
-		for i = 1, GetNumGroupMembers() do
-			local name = StripDice.GetNameFromIndex( i )
-			StripDice_players[name] = StripDice_players[name] or {}
-		end
 	end
 end
 StripDice.PLAYER_ENTERING_WORLD = StripDice.GROUP_ROSTER_UPDATE
 function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
-	StripDice.Print( "msg:"..msg )
 	msg = string.lower( msg )
 	if( string.find( msg, "roll" ) ) then
+		StripDice.Print( "msg:"..msg )
 		StripDice.Print( "A roll has been started." )
 		StripDice.Print( "other: "..other.." language: "..language )
+		StripDice.currentGame = time()
+		StripDice.Print( "Game: "..StripDice.currentGame )
+		StripDice_games[ StripDice.currentGame ] = {}
+		SetRaidTarget( StripDice.minWho, 0 )
+		StripDice.min = nil
+		StripDice.minWho = nil
+		SetRaidTarget( StripDice.maxWho, 0 )
+		StripDice.max = nil
+		StripDice.maxWho = nil
 	end
 end
 StripDice.CHAT_MSG_PARTY = StripDice.CHAT_MSG_SAY
@@ -115,8 +121,21 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 	found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
 	if( found ) then
 		StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
-
-		--SetRaidTarget(Vic.srcName, Vic.raidIconValues[Vic_options.symbol]);
+		if( StripDice.currentGame ) then
+			if( StripDice_games[StripDice.currentGame][who] ) then
+				StripDice.Print( who.." has already rolled." )
+			else
+				StripDice_games[StripDice.currentGame][who] = roll
+			end
+			for who,rolled in StripDice_games[StripDice.currentGame] do
+				StripDice.min = min( rolled, StripDice.min )
+				StripDice.max = max( rolled, StripDice.max )
+				if( rolled == StripDice.min ) then StripDice.minWho = who end
+				if( rolled == StripDice.max ) then stripDice.maxWho = who end
+			end
+			SetRaidTarget( StripDice.minWho, StripDice_options.lowIcon )
+			SetRaidTarget( StripDice.maxWho, StripDice_options.highIcon )
+		end
 	end
 end
 ---------
