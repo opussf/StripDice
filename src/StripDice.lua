@@ -18,7 +18,7 @@ COLOR_END = "|r";
 StripDice = {}
 StripDice_players = {}
 
-StripDice_options = { ["lowIcon"] = "cross", ["highIcon"] = "star" }
+StripDice_options = { ["lowIcon"] = 1, ["highIcon"] = 7 }
 
 StripDice.raidIconValues = {
 	["star"] = 1,
@@ -70,8 +70,8 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY_LEADER" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_RAID" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_RAID_LEADER" )
-		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE" )
-		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_LEADER" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
 
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_YELL" )
 	elseif( NumGroupMembers > 0 ) then
@@ -81,10 +81,10 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_PARTY_LEADER" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_RAID" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_RAID_LEADER" )
-		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE" )
-		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_LEADER" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_CHAT" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_YELL" )
-		StripDice_player[ StripDice.myName ] = {}
+		StripDice_players[ StripDice.myName ] = {}
 		for i = 1, GetNumGroupMembers() do
 			local name = StripDice.GetNameFromIndex( i )
 			StripDice_players[name] = StripDice_players[name] or {}
@@ -105,16 +105,18 @@ StripDice.CHAT_MSG_PARTY = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_PARTY_LEADER = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_RAID = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_RAID_LEADER = StripDice.CHAT_MSG_SAY
-StripDice.CHAT_MSG_INSTANCE = StripDice.CHAT_MSG_SAY
-StripDice.CHAT_MSG_INSTANCE_LEADER = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_INSTANCE_CHAT = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_INSTANCE_CHAT_LEADER = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_YELL = StripDice.CHAT_MSG_SAY
 
 function StripDice.CHAT_MSG_SYSTEM( ... )
 	_, roll = ...
 	StripDice.Print( roll )
-	found, _, who, roll, low, high = string.find( roll, "(%a+) rolls (%d+) %((%d+)%-(%d+)%)")
+	found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
 	if( found ) then
 		StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
+
+		--SetRaidTarget(Vic.srcName, Vic.raidIconValues[Vic_options.symbol]);
 	end
 end
 ---------
