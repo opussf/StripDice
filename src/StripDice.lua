@@ -95,14 +95,14 @@ function StripDice.CHAT_MSG_SAY( ... )
 	if( string.find( msg, "roll" ) ) then
 		StripDice.Print( "msg:"..msg )
 		StripDice.Print( "A roll has been started." )
-		StripDice.Print( "other: "..other.." language: "..language )
+		--StripDice.Print( "other: "..other.." language: "..language )
 		StripDice.currentGame = time()
 		StripDice.Print( "Game: "..StripDice.currentGame )
 		StripDice_games[ StripDice.currentGame ] = {}
-		SetRaidTarget( StripDice.minWho, 0 )
+		if( StripDice.minWho ) then SetRaidTarget( StripDice.minWho, 0 ) end
 		StripDice.min = nil
 		StripDice.minWho = nil
-		SetRaidTarget( StripDice.maxWho, 0 )
+		if( StripDice.maxWho ) then SetRaidTarget( StripDice.maxWho, 0 ) end
 		StripDice.max = nil
 		StripDice.maxWho = nil
 	end
@@ -120,21 +120,27 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 	StripDice.Print( roll )
 	found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
 	if( found ) then
+		roll = tonumber( roll )
 		StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
 		if( StripDice.currentGame ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
+				DoEmote( "Bonk", who )
 				StripDice.Print( who.." has already rolled." )
 			else
 				StripDice_games[StripDice.currentGame][who] = roll
 			end
-			for who,rolled in StripDice_games[StripDice.currentGame] do
-				StripDice.min = min( rolled, StripDice.min )
-				StripDice.max = max( rolled, StripDice.max )
+			for who,rolled in pairs( StripDice_games[StripDice.currentGame] ) do
+				--StripDice.Print( who.." -> ".. rolled )
+				StripDice.min = min( rolled, StripDice.min or high )
+				StripDice.max = max( rolled, StripDice.max or low )
+				--StripDice.Print( "min -> "..StripDice.min )
+
 				if( rolled == StripDice.min ) then StripDice.minWho = who end
-				if( rolled == StripDice.max ) then stripDice.maxWho = who end
+				if( rolled == StripDice.max ) then StripDice.maxWho = who end
 			end
-			SetRaidTarget( StripDice.minWho, StripDice_options.lowIcon )
-			SetRaidTarget( StripDice.maxWho, StripDice_options.highIcon )
+			--StripDice.Print( "Set min on "..StripDice.minWho )
+			if( StripDice_optins.lowIcon ) then SetRaidTarget( StripDice.minWho, StripDice_options.lowIcon ) end
+			if( StripDice_options.highIcon ) then SetRaidTarget( StripDice.maxWho, StripDice_options.highIcon ) end
 		end
 	end
 end
