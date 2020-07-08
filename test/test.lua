@@ -10,11 +10,15 @@ test.outFileName = "testOut.xml"
 
 -- addon setup
 function test.before()
+	myParty = { roster = {} }
+	playerRange = {}
 end
 function test.after()
 end
 
 function test.test_makeParty()
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.OnLoad()
 
 end
 --[[
