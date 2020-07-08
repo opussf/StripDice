@@ -76,6 +76,7 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_YELL" )
+		StripDice.StopGame()
 	elseif( NumGroupMembers > 0 ) then
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SAY" )
@@ -94,17 +95,11 @@ function StripDice.CHAT_MSG_SAY( ... )
 	msg = string.lower( msg )
 	if( string.find( msg, "roll" ) ) then
 		--StripDice.Print( "msg:"..msg )
-
-		--StripDice.Print( "other: "..other.." language: "..language )
+		StripDice.StopGame()
 		StripDice.currentGame = time()
-		StripDice.Print( "A roll has been started.  Game: "..StripDice.currentGame )
 		StripDice_games[ StripDice.currentGame ] = {}
-		if( StripDice.minWho ) then SetRaidTarget( StripDice.minWho, 0 ) end
-		StripDice.min = nil
-		StripDice.minWho = nil
-		if( StripDice.maxWho ) then SetRaidTarget( StripDice.maxWho, 0 ) end
-		StripDice.max = nil
-		StripDice.maxWho = nil
+		StripDice.Print( "A roll has been started.  Game: "..StripDice.currentGame )
+
 		local pruneCount = 0
 		for gameTS in pairs( StripDice_games ) do
 			if( gameTS + 86400 < StripDice.currentGame ) then
@@ -115,6 +110,9 @@ function StripDice.CHAT_MSG_SAY( ... )
 		if( pruneCount > 0 ) then
 			StripDice.Print( "Pruned "..pruneCount.." old games." )
 		end
+	elseif( StripDice.currentGame and StripDice.currentGame + 60 > time() ) then  -- game is started, and older than 1 minute
+		StripDice.Print( "Game timed out" )
+		StripDice.StopGame()
 	end
 end
 StripDice.CHAT_MSG_PARTY = StripDice.CHAT_MSG_SAY
@@ -153,4 +151,13 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			if( StripDice_options.highIcon ) then SetRaidTarget( StripDice.maxWho, StripDice_options.highIcon ) end
 		end
 	end
+end
+function StripDice.StopGame()
+	StripDice.currentGame = nil
+	if( StripDice.minWho ) then SetRaidTarget( StripDice.minWho, 0 ) end
+	StripDice.min = nil
+	StripDice.minWho = nil
+	if( StripDice.maxWho ) then SetRaidTarget( StripDice.maxWho, 0 ) end
+	StripDice.max = nil
+	StripDice.maxWho = nil
 end
