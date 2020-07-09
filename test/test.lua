@@ -16,11 +16,143 @@ end
 function test.after()
 end
 
-function test.test_makeParty()
-	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+function test.test_HasSaveTable()
+	-- assure that the save game table is created
+	assertTrue( StripDice_games )
+end
+function test.test_OnLoad_Register_GROUP_ROSTER_UPDATE()
 	StripDice.OnLoad()
+	assertTrue( StripDiceFrame.Events.GROUP_ROSTER_UPDATE )
+end
+function test.test_OnLoad_Register_PLAYER_ENTERING_WORLD()
+	StripDice.OnLoad()
+	assertTrue( StripDiceFrame.Events.PLAYER_ENTERING_WORLD )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_SYSTEM()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_SYSTEM )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_SYSTEM )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_SAY()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_SAY )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_SAY )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_YELL()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_YELL )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_YELL )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_PARTY()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_PARTY )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_PARTY )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_PARTY_LEADER()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_PARTY_LEADER )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_PARTY_LEADER )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_RAID()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_RAID )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_RAID )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_RAID_LEADER()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_RAID_LEADER )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_RAID_LEADER )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_INSTANCE_CHAT()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_INSTANCE_CHAT )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_INSTANCE_CHAT )
+end
+function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_INSTANCE_CHAT_LEADER()
+	-- GROUP_ROSTER_UPDATE registers events in party
+	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertTrue( StripDiceFrame.Events.CHAT_MSG_INSTANCE_CHAT_LEADER )
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDiceFrame.Events.CHAT_MSG_INSTANCE_CHAT_LEADER )
+end
+function test.test_GROUP_ROSTER_UPDATE_LeavePartyStopsGame()
+	StripDice.currentGame = time()
+	StripDice.min = 1; StripDice.minWho = "Frank"
+	StripDice.max = 99; StripDice.maxWho = "Bob"
+	myParty = { ["group"] = nil, ["roster"] = {} }
+	StripDice.GROUP_ROSTER_UPDATE()
+	assertIsNil( StripDice.currentGame, "currentGame should be nil" )
+	assertIsNil( StripDice.min, "min should be nil" )
+	assertIsNil( StripDice.minWho, "minWho should be nil" )
+	assertIsNil( StripDice.max, "max should be nil" )
+	assertIsNil( StripDice.maxWho, "maxWho should be nil" )
+end
+function test.test_StopGame_clearsCurrentGame()
+	StripDice.currentGame = time()
+	StripDice.min = 1; StripDice.minWho = "Frank"
+	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.StopGame()
+	assertIsNil( StripDice.currentGame, "currentGame should be nil" )
+	assertIsNil( StripDice.min, "min should be nil" )
+	assertIsNil( StripDice.minWho, "minWho should be nil" )
+	assertIsNil( StripDice.max, "max should be nil" )
+	assertIsNil( StripDice.maxWho, "maxWho should be nil" )
+end
+function test_test_StartGame_NotInParty_CHAT_MSG_SAY()
+	-- this should not
+	StripDice.StopGame()
+	StripDice.CHAT_MSG_SAY( {}, "Roll the dice!" )
+	assertEquals( StripDice.currentGame = time() )
 
 end
+
+
+
+--[[
+
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_YELL" )
+]]
+	--
+
+--function test.test_makeParty()
+--	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
+--	StripDice.OnLoad()
+
+--end
 --[[
 function test.showCharList()
 	--if true then return end
