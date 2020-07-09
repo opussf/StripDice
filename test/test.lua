@@ -132,12 +132,44 @@ function test.test_StopGame_clearsCurrentGame()
 	assertIsNil( StripDice.max, "max should be nil" )
 	assertIsNil( StripDice.maxWho, "maxWho should be nil" )
 end
-function test_test_StartGame_NotInParty_CHAT_MSG_SAY()
+function test.test_StartGame_InParty_CHAT_MSG_SAY()
 	-- this should not
 	StripDice.StopGame()
-	StripDice.CHAT_MSG_SAY( {}, "Roll the dice!" )
-	assertEquals( StripDice.currentGame = time() )
-
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	local now = time()
+	StripDice.CHAT_MSG_SAY( {}, "Roll the dice!" )  -- the test that this event is registered is above
+	assertEquals( now, StripDice.currentGame )
+	assertTrue( StripDice_games[now] )
+	assertIsNil( StripDice.min, "min should be nil" )
+	assertIsNil( StripDice.minWho, "minWho should be nil" )
+	assertIsNil( StripDice.max, "max should be nil" )
+	assertIsNil( StripDice.maxWho, "maxWho should be nil" )
+end
+function test.test_StartGame_restartsGame_CHAT_MSG_SAY()
+	StripDice.currentGame = time()-15    -- this keeps the game valid
+	StripDice.min = 1; StripDice.minWho = "Frank"
+	StripDice.max = 99; StripDice.maxWho = "Bob"
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	local now = time()
+	StripDice.CHAT_MSG_SAY( {}, "Roll the dice!" )  -- the test that this event is registered is above
+	assertEquals( now, StripDice.currentGame )
+	assertTrue( StripDice_games[now] )
+	assertIsNil( StripDice.min, "min should be nil" )
+	assertIsNil( StripDice.minWho, "minWho should be nil" )
+	assertIsNil( StripDice.max, "max should be nil" )
+	assertIsNil( StripDice.maxWho, "maxWho should be nil" )
+end
+function test.test_StartGame_prunesOldGames()
+	StripDice_games[1] = {}
+	StripDice_games[2] = {}
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	local now = time()
+	StripDice.CHAT_MSG_SAY( {}, "Roll the dice!" )  -- the test that this event is registered is above
+	assertIsNil( StripDice_games[1] )
+	assertIsNil( StripDice_games[2] )
 end
 
 
