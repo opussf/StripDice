@@ -110,7 +110,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 		if( pruneCount > 0 ) then
 			StripDice.Print( "Pruned "..pruneCount.." old games." )
 		end
-	elseif( StripDice.currentGame and StripDice.currentGame + 60 > time() ) then  -- game is started, and older than 1 minute
+	elseif( StripDice.currentGame and StripDice.currentGame + 60 < time() ) then  -- game is started, and older than 1 minute
 		StripDice.Print( "Game timed out" )
 		StripDice.StopGame()
 	end
@@ -130,7 +130,7 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 	if( found ) then
 		roll = tonumber( roll )
 		--StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
-		if( StripDice.currentGame ) then
+		if( StripDice.currentGame and StripDice.currentGame + 60 < time() ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
 				DoEmote( "No", who )
 				StripDice.Print( who.." has already rolled." )
