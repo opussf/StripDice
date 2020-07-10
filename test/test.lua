@@ -171,6 +171,55 @@ function test.test_StartGame_prunesOldGames()
 	assertIsNil( StripDice_games[1] )
 	assertIsNil( StripDice_games[2] )
 end
+function test.test_GameTimesOut()
+	-- test that a started game is ended after 60 seconds
+	StripDice.currentGame = time()-61    -- this keeps the game valid
+	StripDice.min = 1; StripDice.minWho = "Frank"
+	StripDice.max = 99; StripDice.maxWho = "Bob"
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "hello" )
+	assertIsNil( StripDice.currentGame )
+	assertIsNil( StripDice.min, "min should be nil" )
+	assertIsNil( StripDice.minWho, "minWho should be nil" )
+	assertIsNil( StripDice.max, "max should be nil" )
+	assertIsNil( StripDice.maxWho, "maxWho should be nil" )
+end
+function test.test_CHAT_MSG_SYSTEM_performRoll()
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 15 (1-100)" )
+	assertEquals( 15, StripDice_games[time()]["Bob"] )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 25 (1-100)" )
+	assertEquals( 25, StripDice_games[time()]["Frank"] )
+end
+function test.test_CHAT_MSG_SYSTEM_rerolls()
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 35 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 95 (1-100)" )
+	assertEquals( 35, StripDice_games[time()]["Bob"] )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSetsMin()
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 45 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 46 (1-100)" )
+	assertEquals( 45, StripDice.min )
+	assertEquals( "Bob", StripDice.minWho )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSetsMax()
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 55 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 56 (1-100)" )
+	assertEquals( 56, StripDice.max )
+	assertEquals( "Frank", StripDice.maxWho )
+end
 
 
 
