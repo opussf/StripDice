@@ -43,27 +43,12 @@ function StripDice.Print( msg, showName )
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
---[[
-function StripDice.GetNameFromIndex( index )
-	StripDice.lookupPre = StripDice.lookupPre or "PARTY"
-	if index > 4 then
-		StripDice.lookupPre = "RAID"
-	end
-	local lookupString = StripDice.lookupPre..index
-	return GetUnitName( lookupString ) or "NotSet"
-end
-]]
 function StripDice.OnLoad()
 	--StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
 	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
 	StripDiceFrame:RegisterEvent( "PLAYER_ENTERING_WORLD" )
 	--StripDice.myName = UnitName( "player" )
 end
---[[
-function StripDice.VARIABLES_LOADED()
-	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
-end
-]]
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
 	StripDice.Print( "There are now "..NumGroupMembers.." in your group." )
