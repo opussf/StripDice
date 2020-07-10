@@ -20,11 +20,12 @@ StripDice_games = {}
 --	[ts] = {    -- for a game
 --		[player] = roll,
 --	}
-StripDice.currentGame = nil
+StripDice.currentGame = nil   -- probably don't need to do this
 
-StripDice_options = { ["lowIcon"] = 1, ["highIcon"] = 7 }
+StripDice_options = { ["lowIcon"] = 1, ["highIcon"] = 7 }  -- defaults.  Change this structure....
 
-StripDice.raidIconValues = {
+StripDice.raidIconValues = {  -- will be used later to allow control
+	["none"] = 0,
 	["star"] = 1,
 	["circle"] = 2,
 	["diamond"] = 3,
@@ -34,7 +35,6 @@ StripDice.raidIconValues = {
 	["cross"] = 7,
 	["skull"] = 8,
 }
-
 function StripDice.Print( msg, showName )
 	-- print to the chat frame
 	-- set showName to false to suppress the addon name printing
@@ -43,6 +43,7 @@ function StripDice.Print( msg, showName )
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
+--[[
 function StripDice.GetNameFromIndex( index )
 	StripDice.lookupPre = StripDice.lookupPre or "PARTY"
 	if index > 4 then
@@ -51,17 +52,18 @@ function StripDice.GetNameFromIndex( index )
 	local lookupString = StripDice.lookupPre..index
 	return GetUnitName( lookupString ) or "NotSet"
 end
-
+]]
 function StripDice.OnLoad()
-	StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
+	--StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
 	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
 	StripDiceFrame:RegisterEvent( "PLAYER_ENTERING_WORLD" )
 	--StripDice.myName = UnitName( "player" )
 end
+--[[
 function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
 end
-
+]]
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
 	StripDice.Print( "There are now "..NumGroupMembers.." in your group." )
@@ -129,6 +131,8 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 	found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
 	if( found ) then
 		roll = tonumber( roll )
+		low = tonumber( low )
+		high = tonumber( high )
 		--StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
 		if( StripDice.currentGame and StripDice.currentGame + 60 >= time() ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
