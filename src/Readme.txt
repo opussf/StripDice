@@ -1,32 +1,10 @@
-Welcome to Didit2.
+Welcome to StripDice.
 
-Based on original addon by:
-## Author: Parq of Bloodhoof
-## Notes: /didit [party] reports the number of times each party member has cleared a dungeon to your chat window [or party chat]
+The rules are simple.  Everyone performs a /roll.  The low roller has to strip an item.
 
-Change log:
-0.4     -- update logic, BfA dungeons
-0.3b    -- Cata stats
-0.2b    -- Party report
-0.1b    -- Initial build
-        -- Auto scan a player in a party with a mouse over
-        -- Show info in the player tooltip
-        -- cache the data so that duplicate scans are not needed.
+This facilitates the rolls, and places an icon on the high roller, and the low roller.
 
+To start a game, someone says "roll", and everyone has 60 seconds to /roll.
+The low roller gets the raid icon of choice placed on their head.
 
-To do:
--- Party report option
-
-
-Didit_player[playername][statid].value
-
-
-Didit_player = {
-	["playername"] = {
-		["statid"] = {
-			["value"] = "5",
-		}
-		["error"] = "",
-		["lookup"] = "",
-	}
-}
+Have fun!
