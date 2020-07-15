@@ -220,5 +220,18 @@ function test.test_CHAT_MSG_SYSTEM_rollSetsMax()
 	assertEquals( 56, StripDice.max )
 	assertEquals( "Frank", StripDice.maxWho )
 end
-
+----  Set options
+function test.test_SetLowIcon_moon_CHAT_MSG_SAY()
+	StripDice_options.lowIcon = 1  -- set to default (star)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low roll to moon" )
+	assertEquals( 5, StripDice_options.lowIcon )
+end
+function test.test_SetHighIcon_moon_CHAT_MSG_SAY()
+	StripDice_options.highIcon = 7  -- set to default (cross)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set high roll to moon" )
+	assertEquals( 5, StripDice_options.highIcon )
+end
+function test
 test.run()
