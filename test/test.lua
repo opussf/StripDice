@@ -227,11 +227,35 @@ function test.test_SetLowIcon_moon_CHAT_MSG_SAY()
 	StripDice.CHAT_MSG_SAY( {}, "set low roll to moon" )
 	assertEquals( 5, StripDice_options.lowIcon )
 end
+function test.test_SetLowIcon_diamond_CHAT_MSG_SAY()
+	StripDice_options.lowIcon = 1  -- set to default (star)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low roll to {diamond}" )
+	assertEquals( 3, StripDice_options.lowIcon )
+end
+function test.test_SetLowIcon_none_CHAT_MSG_SAY()
+	StripDice_options.lowIcon = 1  -- set to default (star)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low roll to none" )
+	assertIsNil( StripDice_options.lowIcon )
+end
 function test.test_SetHighIcon_moon_CHAT_MSG_SAY()
 	StripDice_options.highIcon = 7  -- set to default (cross)
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set high roll to moon" )
 	assertEquals( 5, StripDice_options.highIcon )
 end
-function test
+function test.test_SetHighIcon_diamond_CHAT_MSG_SAY()
+	StripDice_options.highIcon = 7  -- set to default (cross)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set high roll to {diamond}" )
+	assertEquals( 3, StripDice_options.highIcon )
+end
+function test.test_SetHighIcon_none_CHAT_MSG_SAY()
+	StripDice_options.highIcon = 7  -- set to default (cross)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set high roll to none" )
+	assertIsNil( StripDice_options.highIcon )
+end
+
 test.run()
