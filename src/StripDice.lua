@@ -86,16 +86,17 @@ function StripDice.CHAT_MSG_SAY( ... )
 	if( string.find( msg, "set" ) ) then  -- set is the key word here
 		--print( msg )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
-		--print( "hl: "..(hl or "nil") )
-		local variableName = hl.."Icon"
-		local icon = 0
-		for iconName, iconValue in pairs( StripDice.raidIconValues ) do
-			if( string.match( msg, iconName ) ) then
-				---print( "Set "..variableName.." to "..icon )
-				StripDice_options[variableName] = ( iconValue > 0 and iconValue or nil )
-				for n,v in pairs( StripDice_options ) do
-					if( n ~= variableName and v == iconValue ) then
-						StripDice_options[n] = nil
+		if( hl ) then
+			local variableName = hl.."Icon"
+			local icon = 0
+			for iconName, iconValue in pairs( StripDice.raidIconValues ) do
+				if( string.match( msg, iconName ) ) then
+					---print( "Set "..variableName.." to "..icon )
+					StripDice_options[variableName] = ( iconValue > 0 and iconValue or nil )
+					for n,v in pairs( StripDice_options ) do
+						if( n ~= variableName and v == iconValue ) then
+							StripDice_options[n] = nil
+						end
 					end
 				end
 			end
