@@ -256,6 +256,14 @@ function test.test_SetLowIcon_square_badFormat_CHAT_MSG_SAY()
 	StripDice.CHAT_MSG_SAY( {}, "set low sqare" )
 	assertEquals( 1, StripDice_options.lowIcon )
 end
+function test.test_SetLowIcon_notgiven_CHAT_MSG_SAY()
+	StripDice_options.lowIcon = 1  -- set to default (star)
+	StripDice_options.highIcon = 7  -- set to default (cross)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low" )
+	assertEquals( 1, StripDice_options.lowIcon )
+	assertEquals( 7, StripDice_options.highIcon )
+end
 function test.test_SetLowIcon_SameAsHighIcon_CHAT_MSG_SAY()
 	-- this should probably clear the highIcon
 	StripDice_options.lowIcon = 1  -- set to default (star)
@@ -310,6 +318,14 @@ function test.test_SetBoth_none_CHAT_MSG_SAY()
 	StripDice.CHAT_MSG_SAY( {}, "set low none" )
 	assertIsNil( StripDice_options.highIcon )
 	assertIsNil( StripDice_options.lowIcon )
+end
+function test.test_SetIcon_setalone_CHAT_MSG_SAY()
+	StripDice_options.lowIcon = 1  -- set to default (star)
+	StripDice_options.highIcon = 7  -- set to default (cross)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set" )
+	assertEquals( 1, StripDice_options.lowIcon )
+	assertEquals( 7, StripDice_options.highIcon )
 end
 
 test.run()
