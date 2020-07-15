@@ -51,9 +51,9 @@ function StripDice.OnLoad()
 end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
-	StripDice.Print( "There are now "..NumGroupMembers.." in your group." )
+	--StripDice.Print( "There are now "..NumGroupMembers.." in your group." )
 	if( NumGroupMembers == 0 ) then  -- turn off listening
-		StripDice.Print( "Resetting and clearing player listing." )
+		StripDice.Print( "Deactivating Dice game." )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY" )
@@ -64,7 +64,9 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_YELL" )
 		StripDice.StopGame()
-	elseif( NumGroupMembers > 0 ) then
+		StripDice.gameActive = nil
+	elseif( NumGroupMembers > 0 and not StripDice.gameActive ) then
+		StripDice.Print( "Dice game is active." )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_PARTY" )
@@ -74,13 +76,32 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_CHAT" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_YELL" )
+		StripDice.gameActive = true
 	end
 end
 StripDice.PLAYER_ENTERING_WORLD = StripDice.GROUP_ROSTER_UPDATE
 function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
 	msg = string.lower( msg )
-	if( string.find( msg, "roll" ) ) then
+	if( string.find( msg, "set" ) ) then  -- set is the key word here
+		--print( msg )
+		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
+		if( hl ) then
+			local variableName = hl.."Icon"
+			local icon = 0
+			for iconName, iconValue in pairs( StripDice.raidIconValues ) do
+				if( string.match( msg, iconName ) ) then
+					---print( "Set "..variableName.." to "..icon )
+					StripDice_options[variableName] = ( iconValue > 0 and iconValue or nil )
+					for n,v in pairs( StripDice_options ) do
+						if( n ~= variableName and v == iconValue ) then
+							StripDice_options[n] = nil
+						end
+					end
+				end
+			end
+		end
+	elseif( string.find( msg, "roll" ) ) then  -- roll starts a roll
 		--StripDice.Print( "msg:"..msg )
 		StripDice.StopGame()
 		StripDice.currentGame = time()
@@ -113,7 +134,7 @@ StripDice.CHAT_MSG_YELL = StripDice.CHAT_MSG_SAY
 function StripDice.CHAT_MSG_SYSTEM( ... )
 	_, roll = ...
 	--StripDice.Print( roll )
-	found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
+	local found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
 	if( found ) then
 		roll = tonumber( roll )
 		low = tonumber( low )
