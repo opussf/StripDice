@@ -327,5 +327,13 @@ function test.test_SetIcon_setalone_CHAT_MSG_SAY()
 	assertEquals( 1, StripDice_options.lowIcon )
 	assertEquals( 7, StripDice_options.highIcon )
 end
+function test.test_SetIcon_noEndGiven_CHAT_MSG_SAY()
+	StripDice_options.lowIcon = 1  -- set to default (star)
+	StripDice_options.highIcon = 7  -- set to default (cross)
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set skull" )
+	assertEquals( 1, StripDice_options.lowIcon )
+	assertEquals( 7, StripDice_options.highIcon )
+end
 
 test.run()
