@@ -14,7 +14,7 @@ StripDice_games = {}
 --	}
 StripDice.currentGame = nil   -- probably don't need to do this
 
-StripDice_options = { ["lowIcon"] = 1, ["highIcon"] = 7 }  -- defaults.  Change this structure....
+StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7} }  -- defaults.  Change this structure....
 
 StripDice.raidIconValues = {  -- will be used later to allow control
 	["none"] = 0,
@@ -81,13 +81,24 @@ function StripDice.CHAT_MSG_SAY( ... )
 		if( hl ) then
 			local variableName = hl.."Icon"
 			local icon = 0
-			for iconName, iconValue in pairs( StripDice.raidIconValues ) do
-				if( string.match( msg, iconName ) ) then
-					---print( "Set "..variableName.." to "..icon )
-					StripDice_options[variableName] = ( iconValue > 0 and iconValue or nil )
-					for n,v in pairs( StripDice_options ) do
-						if( n ~= variableName and v == iconValue ) then
-							StripDice_options[n] = nil
+			--print( "msg: "..msg )
+			local index = 0
+			for testString in string.gmatch( msg, "%S+" ) do
+				--print( "testString: "..testString )
+				for iconName, iconValue in pairs( StripDice.raidIconValues ) do
+					if( string.match( testString, iconName ) ) then
+						index = index + 1
+						StripDice_options[variableName][index] = ( iconValue > 0 and iconValue or nil )
+						-- search for this icon elsewhere and clear it.
+						for setting, settingTable in pairs( StripDice_options ) do
+							for i, val in pairs( settingTable ) do
+								print( "value: "..val.." =? "..iconValue.."  index: "..i.." =? "..index.."  setting: "..setting.." =? "..variableName )
+								--print( "i: "..i.."  val: "..val )
+								if( val == iconValue and ( i ~= index or setting ~= variableName ) ) then
+									print( "setting "..setting.."["..i.."] to nil" )
+									StripDice_options[setting][i] = nil
+								end
+							end
 						end
 					end
 				end
