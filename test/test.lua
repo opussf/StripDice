@@ -115,8 +115,8 @@ function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_INSTANCE_CHAT_LEADER()
 end
 function test.test_GROUP_ROSTER_UPDATE_LeavePartyStopsGame()
 	StripDice.currentGame = time()
-	StripDice.min = 1; StripDice.minWho = "Frank"
-	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.min = {1}; StripDice.minWho = { "Frank" }
+	StripDice.max = {99}; StripDice.maxWho = { "Bob" }
 	myParty = { ["group"] = nil, ["roster"] = {} }
 	StripDice.GROUP_ROSTER_UPDATE()
 	assertIsNil( StripDice.currentGame, "currentGame should be nil" )
@@ -127,8 +127,8 @@ function test.test_GROUP_ROSTER_UPDATE_LeavePartyStopsGame()
 end
 function test.test_StopGame_clearsCurrentGame()
 	StripDice.currentGame = time()
-	StripDice.min = 1; StripDice.minWho = "Frank"
-	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.min = {1}; StripDice.minWho = {"Frank"}
+	StripDice.max = {99}; StripDice.maxWho = {"Bob"}
 	StripDice.StopGame()
 	assertIsNil( StripDice.currentGame, "currentGame should be nil" )
 	assertIsNil( StripDice.min, "min should be nil" )
@@ -152,8 +152,8 @@ function test.test_StartGame_InParty_CHAT_MSG_SAY()
 end
 function test.test_StartGame_restartsGame_CHAT_MSG_SAY()
 	StripDice.currentGame = time()-15    -- this keeps the game valid
-	StripDice.min = 1; StripDice.minWho = "Frank"
-	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.min = {1}; StripDice.minWho = {"Frank"}
+	StripDice.max = {99}; StripDice.maxWho = {"Bob"}
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	local now = time()
@@ -178,8 +178,8 @@ end
 function test.test_GameTimesOut()
 	-- test that a started game is ended after 60 seconds
 	StripDice.currentGame = time()-61    -- this keeps the game valid
-	StripDice.min = 1; StripDice.minWho = "Frank"
-	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.min = {1}; StripDice.minWho = {"Frank"}
+	StripDice.max = {99}; StripDice.maxWho = {"Bob"}
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "hello" )
@@ -212,17 +212,18 @@ function test.test_CHAT_MSG_SYSTEM_rollSetsMin()
 	StripDice.CHAT_MSG_PARTY( {}, "roll" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 45 (1-100)" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 46 (1-100)" )
-	assertEquals( 45, StripDice.min )
-	assertEquals( "Bob", StripDice.minWho )
+	assertEquals( 45, StripDice.min[1] )
+	assertEquals( "Bob", StripDice.minWho[1] )
 end
 function test.test_CHAT_MSG_SYSTEM_rollSetsMax()
+	test.setDefaultIcons()
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_PARTY( {}, "roll" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 55 (1-100)" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 56 (1-100)" )
-	assertEquals( 56, StripDice.max )
-	assertEquals( "Frank", StripDice.maxWho )
+	assertEquals( 56, StripDice.max[1] )
+	assertEquals( "Frank", StripDice.maxWho[1] )
 end
 ----  Set options
 function test.test_SetLowIcon_moon_CHAT_MSG_SAY()
@@ -349,9 +350,56 @@ function test.test_SetIcon_set2highest_CHAT_MSG_SAY()
 end
 function test.test_setIcon_setLowNone_clearsLow_CHAT_MSG_SAY()
 	test.setDefaultIcons()
+	StripDice_options.lowIcon[2] = 3
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low none" )
 	assertEquals( 0, #StripDice_options.lowIcon )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSetsMin_multipleIcons()
+	test.setDefaultIcons()   -- low = 1-star, high = 7-cross
+	StripDice_options.highIcon = {}
+	StripDice_options.lowIcon[2] = 3
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 2 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 98 (1-100)" )
+	assertEquals( 2, StripDice.min[1] )
+	assertEquals( "Frank", StripDice.minWho[1] )
+	assertEquals( 98, StripDice.min[2] )
+	assertEquals( "Bob", StripDice.minWho[2] )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSetsMin_SameValue()
+	test.setDefaultIcons()   -- low = 1-star, high = 7-cross
+	StripDice_options.highIcon = {}
+	StripDice_options.lowIcon[2] = 3
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 10 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 10 (1-100)" )
+	assertEquals( 10, StripDice.min[1] )
+	assertTrue( StripDice.minWho[1] == "Frank" or StripDice.minWho[2] == "Frank" )
+	--assertEquals( "Frank", StripDice.minWho[1] )
+	assertEquals( 10, StripDice.min[2] )
+	assertTrue( StripDice.minWho[1] == "Bob" or StripDice.minWho[2] == "Bob" )
+	--assertEquals( "Bob", StripDice.minWho[2] )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSetsMin_groupOf4()
+	test.setDefaultIcons()   -- low = 1-star, high = 7-cross
+	StripDice_options.highIcon = { 8, 7 }
+	StripDice_options.lowIcon = { 1, 2 }
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 5 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 10 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Zed rolls 15 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Ivy rolls 71 (1-100)" )
+	assertEquals( 5, StripDice.min[1] )
+	assertEquals( "Frank", StripDice.minWho[1] )
+	assertEquals( 10, StripDice.min[2] )
+	assertEquals( "Bob", StripDice.minWho[2] )
 end
 
 test.run()
