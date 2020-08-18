@@ -14,7 +14,7 @@ StripDice_games = {}
 --	}
 StripDice.currentGame = nil   -- probably don't need to do this
 
-StripDice_options = { ["lowIcon"] = 1, ["highIcon"] = 7 }  -- defaults.  Change this structure....
+StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7} }  -- defaults.  Change this structure....
 
 StripDice.raidIconValues = {  -- will be used later to allow control
 	["none"] = 0,
@@ -80,14 +80,24 @@ function StripDice.CHAT_MSG_SAY( ... )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
 		if( hl ) then
 			local variableName = hl.."Icon"
-			local icon = 0
-			for iconName, iconValue in pairs( StripDice.raidIconValues ) do
-				if( string.match( msg, iconName ) ) then
-					---print( "Set "..variableName.." to "..icon )
-					StripDice_options[variableName] = ( iconValue > 0 and iconValue or nil )
-					for n,v in pairs( StripDice_options ) do
-						if( n ~= variableName and v == iconValue ) then
-							StripDice_options[n] = nil
+			--print( "msg: "..msg )
+			local index = 0
+			for testString in string.gmatch( msg, "%S+" ) do
+				--print( "testString: "..testString )
+				for iconName, iconValue in pairs( StripDice.raidIconValues ) do
+					if( string.match( testString, iconName ) ) then
+						if( index == 0 ) then StripDice_options[variableName] = {}; end
+						index = index + 1
+						StripDice_options[variableName][index] = ( iconValue > 0 and iconValue or nil )
+						-- search for this icon elsewhere and clear it.
+						for setting, settingTable in pairs( StripDice_options ) do
+							for i, val in pairs( settingTable ) do
+								--print( "value: "..val.." =? "..iconValue.."  index: "..i.." =? "..index.."  setting: "..setting.." =? "..variableName )
+								if( val == iconValue and ( i ~= index or setting ~= variableName ) ) then
+									--print( "setting "..setting.."["..i.."] to nil" )
+									StripDice_options[setting][i] = nil
+								end
+							end
 						end
 					end
 				end
@@ -102,7 +112,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 
 		local pruneCount = 0
 		for gameTS in pairs( StripDice_games ) do
-			if( gameTS + 86400 < StripDice.currentGame ) then
+			if( gameTS + 604800 < StripDice.currentGame ) then
 				StripDice_games[gameTS] = nil
 				pruneCount = pruneCount + 1
 			end
@@ -139,27 +149,103 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			else
 				StripDice_games[StripDice.currentGame][who] = roll
 			end
-			for who,rolled in pairs( StripDice_games[StripDice.currentGame] ) do
-				--StripDice.Print( who.." -> ".. rolled )
-				StripDice.min = min( rolled, StripDice.min or high )
-				StripDice.max = max( rolled, StripDice.max or low )
-				--StripDice.Print( "min -> "..StripDice.min )
-
-				if( rolled == StripDice.min ) then StripDice.minWho = who end
-				if( rolled == StripDice.max ) then StripDice.maxWho = who end
+			-- build sorted rolls table
+			local rolls = {}
+			for _,rolled in pairs( StripDice_games[StripDice.currentGame] ) do
+				table.insert( rolls, rolled )
 			end
-			--StripDice.Print( "Set min on "..StripDice.minWho )
-			if( StripDice_options.lowIcon ) then SetRaidTarget( StripDice.minWho, StripDice_options.lowIcon ) end
-			if( StripDice_options.highIcon ) then SetRaidTarget( StripDice.maxWho, StripDice_options.highIcon ) end
+			table.sort( rolls )
+
+			-- build min and max from rolls
+			StripDice.min = {}
+			StripDice.max = {}
+			local numRolls = #rolls
+			for i = 1, numRolls do
+				--print( i..": "..rolls[i] )
+				table.insert( StripDice.min, rolls[i] )
+				table.insert( StripDice.max, rolls[numRolls - (i-1)] )
+			end
+
+			local numHigh = #StripDice_options.highIcon
+			local numLow = #StripDice_options.lowIcon
+
+			--print( "I have "..#rolls.." rolls." )
+			--print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
+
+			-- find how many of what I need.
+			while( #rolls < ( numHigh + numLow ) ) do
+				if( numHigh > numLow ) then
+					--print( "High - 1" )
+					numHigh = numHigh - 1
+				elseif( numLow > numHigh ) then
+					numLow = numLow - 1
+					--print( "Low - 1" )
+				else
+					--print( "Both - 1" )
+					numLow = numLow - 1
+					numHigh = numHigh - 1
+				end
+			end
+			-- reset to at least 1
+			if( numHigh == 0 and #StripDice_options.highIcon >= 1 ) then numHigh = 1; end
+			if( numLow  == 0 and #StripDice_options.lowIcon >= 1 ) then numLow  = 1; end
+
+			--print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
+
+			-- find who has the top n rolls
+			--print( "Find Max" )
+			StripDice.maxWho = {}
+			local who = {}
+			for rollIndex = 1, numHigh do
+				rollValue = StripDice.max[rollIndex]
+				for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
+					if( roll == rollValue and who[name] == nil ) then
+						who[name] = roll
+						table.insert( StripDice.maxWho, name )
+					end
+				end
+				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
+			end
+
+			--print( "Find Min" )
+			StripDice.minWho = {}
+			who = {}
+			for rollIndex = 1, numLow do
+				rollValue = StripDice.min[rollIndex]
+				for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
+					if( roll == rollValue and who[name] == nil ) then
+						who[name] = roll
+						table.insert( StripDice.minWho, name )
+					end
+				end
+				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
+			end
+			for i,name in ipairs( StripDice.minWho ) do
+				--print( "Min: Put "..StripDice_options.lowIcon[i].." on "..name )
+				SetRaidTarget( name, StripDice_options.lowIcon[i] )
+			end
+			for i,name in ipairs( StripDice.maxWho ) do
+				--print( "Max: Put "..StripDice_options.highIcon[i].." on "..name )
+				SetRaidTarget( name, StripDice_options.highIcon[i] )
+			end
 		end
 	end
 end
 function StripDice.StopGame()
+	-- @TODO  'fix this too'
 	StripDice.currentGame = nil
-	if( StripDice.minWho ) then SetRaidTarget( StripDice.minWho, 0 ) end
+	if( StripDice.minWho ) then
+		for _,name in pairs( StripDice.minWho ) do
+			SetRaidTarget( name, 0 )
+		end
+	end
 	StripDice.min = nil
 	StripDice.minWho = nil
-	if( StripDice.maxWho ) then SetRaidTarget( StripDice.maxWho, 0 ) end
+	if( StripDice.maxWho ) then
+		for _,name in pairs( StripDice.maxWho ) do
+			SetRaidTarget( name, 0 )
+		end
+	end
 	StripDice.max = nil
 	StripDice.maxWho = nil
 end

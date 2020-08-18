@@ -12,8 +12,13 @@ test.outFileName = "testOut.xml"
 function test.before()
 	myParty = { roster = {} }
 	playerRange = {}
+	test.setDefaultIcons()
 end
 function test.after()
+end
+function test.setDefaultIcons()
+	StripDice_options.lowIcon = {1}  -- low icon (star)
+	StripDice_options.highIcon = {7} -- high icon (cross)
 end
 
 function test.test_HasSaveTable()
@@ -111,8 +116,8 @@ function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_INSTANCE_CHAT_LEADER()
 end
 function test.test_GROUP_ROSTER_UPDATE_LeavePartyStopsGame()
 	StripDice.currentGame = time()
-	StripDice.min = 1; StripDice.minWho = "Frank"
-	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.min = {1}; StripDice.minWho = { "Frank" }
+	StripDice.max = {99}; StripDice.maxWho = { "Bob" }
 	myParty = { ["group"] = nil, ["roster"] = {} }
 	StripDice.GROUP_ROSTER_UPDATE()
 	assertIsNil( StripDice.currentGame, "currentGame should be nil" )
@@ -123,8 +128,8 @@ function test.test_GROUP_ROSTER_UPDATE_LeavePartyStopsGame()
 end
 function test.test_StopGame_clearsCurrentGame()
 	StripDice.currentGame = time()
-	StripDice.min = 1; StripDice.minWho = "Frank"
-	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.min = {1}; StripDice.minWho = {"Frank"}
+	StripDice.max = {99}; StripDice.maxWho = {"Bob"}
 	StripDice.StopGame()
 	assertIsNil( StripDice.currentGame, "currentGame should be nil" )
 	assertIsNil( StripDice.min, "min should be nil" )
@@ -148,8 +153,8 @@ function test.test_StartGame_InParty_CHAT_MSG_SAY()
 end
 function test.test_StartGame_restartsGame_CHAT_MSG_SAY()
 	StripDice.currentGame = time()-15    -- this keeps the game valid
-	StripDice.min = 1; StripDice.minWho = "Frank"
-	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.min = {1}; StripDice.minWho = {"Frank"}
+	StripDice.max = {99}; StripDice.maxWho = {"Bob"}
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	local now = time()
@@ -174,8 +179,8 @@ end
 function test.test_GameTimesOut()
 	-- test that a started game is ended after 60 seconds
 	StripDice.currentGame = time()-61    -- this keeps the game valid
-	StripDice.min = 1; StripDice.minWho = "Frank"
-	StripDice.max = 99; StripDice.maxWho = "Bob"
+	StripDice.min = {1}; StripDice.minWho = {"Frank"}
+	StripDice.max = {99}; StripDice.maxWho = {"Bob"}
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "hello" )
@@ -203,137 +208,200 @@ function test.test_CHAT_MSG_SYSTEM_rerolls()
 	assertEquals( 35, StripDice_games[time()]["Bob"] )
 end
 function test.test_CHAT_MSG_SYSTEM_rollSetsMin()
+	--test.setDefaultIcons()   -- low = 1-star, high = 7-cross
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_PARTY( {}, "roll" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 45 (1-100)" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 46 (1-100)" )
-	assertEquals( 45, StripDice.min )
-	assertEquals( "Bob", StripDice.minWho )
+	assertEquals( 45, StripDice.min[1] )
+	assertEquals( "Bob", StripDice.minWho[1] )
 end
 function test.test_CHAT_MSG_SYSTEM_rollSetsMax()
+	--test.setDefaultIcons()
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_PARTY( {}, "roll" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 55 (1-100)" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 56 (1-100)" )
-	assertEquals( 56, StripDice.max )
-	assertEquals( "Frank", StripDice.maxWho )
+	assertEquals( 56, StripDice.max[1] )
+	assertEquals( "Frank", StripDice.maxWho[1] )
 end
 ----  Set options
 function test.test_SetLowIcon_moon_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low roll to moon" )
-	assertEquals( 5, StripDice_options.lowIcon )
+	assertEquals( 5, StripDice_options.lowIcon[1] )
 end
 function test.test_SetLowIcon_diamond_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low roll to {diamond}" )
-	assertEquals( 3, StripDice_options.lowIcon )
+	assertEquals( 3, StripDice_options.lowIcon[1] )
 end
 function test.test_SetLowIcon_none_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low roll to none" )
-	assertIsNil( StripDice_options.lowIcon )
+	assertIsNil( StripDice_options.lowIcon[1] )
 end
 function test.test_SetLowIcon_skull_brief_ChAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low skull" )
-	assertEquals( 8, StripDice_options.lowIcon )
+	assertEquals( 8, StripDice_options.lowIcon[1] )
 end
 function test.test_SetLowIcon_square_badFormat_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low sqare" )
-	assertEquals( 1, StripDice_options.lowIcon )
+	assertEquals( 1, StripDice_options.lowIcon[1] )
 end
 function test.test_SetLowIcon_notgiven_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low" )
-	assertEquals( 1, StripDice_options.lowIcon )
-	assertEquals( 7, StripDice_options.highIcon )
+	assertEquals( 1, StripDice_options.lowIcon[1] )
+	assertEquals( 7, StripDice_options.highIcon[1] )
 end
 function test.test_SetLowIcon_SameAsHighIcon_CHAT_MSG_SAY()
 	-- this should probably clear the highIcon
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
+	print( "high icon[1]: "..StripDice_options.highIcon[1] )
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low icon to cross" )
-	assertEquals( 7, StripDice_options.lowIcon )
-	assertIsNil( StripDice_options.highIcon )
+	assertEquals( 7, StripDice_options.lowIcon[1] )
+	assertIsNil( StripDice_options.highIcon[1] )
 end
 function test.test_SetHighIcon_moon_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set high roll to moon" )
-	assertEquals( 5, StripDice_options.highIcon )
+	assertEquals( 5, StripDice_options.highIcon[1] )
 end
 function test.test_SetHighIcon_diamond_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set high roll to {diamond}" )
-	assertEquals( 3, StripDice_options.highIcon )
+	assertEquals( 3, StripDice_options.highIcon[1] )
 end
 function test.test_SetHighIcon_none_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set high roll to none" )
-	assertIsNil( StripDice_options.highIcon )
+	assertEquals( 0, #StripDice_options.highIcon, "this should be empty" )
 end
 function test.test_SetHighIcon_skull_brief_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set high skull" )
-	assertEquals( 8, StripDice_options.highIcon )
+	assertEquals( 8, StripDice_options.highIcon[1] )
 end
 function test.test_SetHighIcon_SameAsLowIcon_CHAT_MSG_SAY()
 	-- this should probably clear the lowIcon
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()   -- low = 1-star, high = 7-cross
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set high icon to star" )
-	assertEquals( 1, StripDice_options.highIcon )
-	assertIsNil( StripDice_options.lowIcon )
+	assertEquals( 1, StripDice_options.highIcon[1] )
+	assertIsNil( StripDice_options.lowIcon[1] )
 end
 function test.test_SetBoth_none_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set high icon to none" )
 	StripDice.CHAT_MSG_SAY( {}, "set low none" )
-	assertIsNil( StripDice_options.highIcon )
-	assertIsNil( StripDice_options.lowIcon )
+	assertIsNil( StripDice_options.highIcon[1] )
+	assertIsNil( StripDice_options.lowIcon[1] )
 end
 function test.test_SetIcon_setalone_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set" )
-	assertEquals( 1, StripDice_options.lowIcon )
-	assertEquals( 7, StripDice_options.highIcon )
+	assertEquals( 1, StripDice_options.lowIcon[1] )
+	assertEquals( 7, StripDice_options.highIcon[1] )
 end
 function test.test_SetIcon_noEndGiven_CHAT_MSG_SAY()
-	StripDice_options.lowIcon = 1  -- set to default (star)
-	StripDice_options.highIcon = 7  -- set to default (cross)
+	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set skull" )
-	assertEquals( 1, StripDice_options.lowIcon )
-	assertEquals( 7, StripDice_options.highIcon )
+	assertEquals( 1, StripDice_options.lowIcon[1] )
+	assertEquals( 7, StripDice_options.highIcon[1] )
+end
+-------------------
+-- Multiple settings
+-------------------
+function test.test_SetIcon_set2lowest_CHAT_MSG_SAY()
+	--test.setDefaultIcons()
+	StripDice_options.highIcon[1] = 7
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low star cross" )
+	assertEquals( 1, StripDice_options.lowIcon[1] )
+	assertEquals( 7, StripDice_options.lowIcon[2] )
+	assertIsNil( StripDice_options.highIcon[1] )
+end
+function test.test_SetIcon_set2highest_CHAT_MSG_SAY()
+	--test.setDefaultIcons()
+	StripDice_options.highIcon[3] = 3
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set high star diamond" )
+	assertEquals( 1, StripDice_options.highIcon[1] )
+	assertEquals( 3, StripDice_options.highIcon[2] )
+	assertEquals( 2, #StripDice_options.highIcon )
+	assertIsNil( StripDice_options.highIcon[3] )
+end
+function test.test_setIcon_setLowNone_clearsLow_CHAT_MSG_SAY()
+	--test.setDefaultIcons()
+	StripDice_options.lowIcon[2] = 3
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low none" )
+	assertEquals( 0, #StripDice_options.lowIcon )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSetsMin_multipleIcons()
+	--test.setDefaultIcons()   -- low = 1-star, high = 7-cross
+	StripDice_options.highIcon = {}
+	StripDice_options.lowIcon[2] = 3
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 2 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 98 (1-100)" )
+	assertEquals( 2, StripDice.min[1] )
+	assertEquals( "Frank", StripDice.minWho[1] )
+	assertEquals( 98, StripDice.min[2] )
+	assertEquals( "Bob", StripDice.minWho[2] )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSetsMin_SameValue()
+	--test.setDefaultIcons()   -- low = 1-star, high = 7-cross
+	StripDice_options.highIcon = {}
+	StripDice_options.lowIcon[2] = 3
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 10 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 10 (1-100)" )
+	assertEquals( 10, StripDice.min[1] )
+	assertTrue( StripDice.minWho[1] == "Frank" or StripDice.minWho[2] == "Frank" )
+	--assertEquals( "Frank", StripDice.minWho[1] )
+	assertEquals( 10, StripDice.min[2] )
+	assertTrue( StripDice.minWho[1] == "Bob" or StripDice.minWho[2] == "Bob" )
+	--assertEquals( "Bob", StripDice.minWho[2] )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSetsMin_groupOf4()
+	--test.setDefaultIcons()   -- low = 1-star, high = 7-cross
+	StripDice_options.highIcon = { 8, 7 }
+	StripDice_options.lowIcon = { 1, 2 }
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 5 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 10 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Zed rolls 15 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Ivy rolls 71 (1-100)" )
+	assertEquals( 5, StripDice.min[1] )
+	assertEquals( "Frank", StripDice.minWho[1] )
+	assertEquals( 10, StripDice.min[2] )
+	assertEquals( "Bob", StripDice.minWho[2] )
 end
 
 test.run()
