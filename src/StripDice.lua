@@ -80,13 +80,13 @@ function StripDice.CHAT_MSG_SAY( ... )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
 		if( hl ) then
 			local variableName = hl.."Icon"
-			local icon = 0
 			--print( "msg: "..msg )
 			local index = 0
 			for testString in string.gmatch( msg, "%S+" ) do
 				--print( "testString: "..testString )
 				for iconName, iconValue in pairs( StripDice.raidIconValues ) do
 					if( string.match( testString, iconName ) ) then
+						if( index == 0 ) then StripDice_options[variableName] = {}; end
 						index = index + 1
 						StripDice_options[variableName][index] = ( iconValue > 0 and iconValue or nil )
 						-- search for this icon elsewhere and clear it.
@@ -94,7 +94,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 							for i, val in pairs( settingTable ) do
 								--print( "value: "..val.." =? "..iconValue.."  index: "..i.." =? "..index.."  setting: "..setting.." =? "..variableName )
 								if( val == iconValue and ( i ~= index or setting ~= variableName ) ) then
-									print( "setting "..setting.."["..i.."] to nil" )
+									--print( "setting "..setting.."["..i.."] to nil" )
 									StripDice_options[setting][i] = nil
 								end
 							end
@@ -112,7 +112,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 
 		local pruneCount = 0
 		for gameTS in pairs( StripDice_games ) do
-			if( gameTS + 86400 < StripDice.currentGame ) then
+			if( gameTS + 604800 < StripDice.currentGame ) then
 				StripDice_games[gameTS] = nil
 				pruneCount = pruneCount + 1
 			end
@@ -132,9 +132,6 @@ StripDice.CHAT_MSG_RAID_LEADER = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_INSTANCE_CHAT = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_INSTANCE_CHAT_LEADER = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_YELL = StripDice.CHAT_MSG_SAY
-
-function StripDice.GetNames()
-end
 
 function StripDice.CHAT_MSG_SYSTEM( ... )
 	_, roll = ...
@@ -164,7 +161,7 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			StripDice.max = {}
 			local numRolls = #rolls
 			for i = 1, numRolls do
-				print( i..": "..rolls[i] )
+				--print( i..": "..rolls[i] )
 				table.insert( StripDice.min, rolls[i] )
 				table.insert( StripDice.max, rolls[numRolls - (i-1)] )
 			end
@@ -172,19 +169,19 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			local numHigh = #StripDice_options.highIcon
 			local numLow = #StripDice_options.lowIcon
 
-			print( "I have "..#rolls.." rolls." )
-			print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
+			--print( "I have "..#rolls.." rolls." )
+			--print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
 
 			-- find how many of what I need.
 			while( #rolls < ( numHigh + numLow ) ) do
 				if( numHigh > numLow ) then
-					print( "High - 1" )
+					--print( "High - 1" )
 					numHigh = numHigh - 1
 				elseif( numLow > numHigh ) then
 					numLow = numLow - 1
-					print( "Low - 1" )
+					--print( "Low - 1" )
 				else
-					print( "Both - 1" )
+					--print( "Both - 1" )
 					numLow = numLow - 1
 					numHigh = numHigh - 1
 				end
@@ -193,10 +190,10 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			if( numHigh == 0 and #StripDice_options.highIcon >= 1 ) then numHigh = 1; end
 			if( numLow  == 0 and #StripDice_options.lowIcon >= 1 ) then numLow  = 1; end
 
-			print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
+			--print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
 
 			-- find who has the top n rolls
-			print( "Find Max" )
+			--print( "Find Max" )
 			StripDice.maxWho = {}
 			local who = {}
 			for rollIndex = 1, numHigh do
@@ -207,10 +204,10 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 						table.insert( StripDice.maxWho, name )
 					end
 				end
-				print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
+				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
 			end
 
-			print( "Find Min" )
+			--print( "Find Min" )
 			StripDice.minWho = {}
 			who = {}
 			for rollIndex = 1, numLow do
@@ -221,35 +218,16 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 						table.insert( StripDice.minWho, name )
 					end
 				end
-				print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
+				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
 			end
 			for i,name in ipairs( StripDice.minWho ) do
-				print( i )
-				print( name )
-				print( "Put "..StripDice_options.lowIcon[i].." on "..name )
+				--print( "Min: Put "..StripDice_options.lowIcon[i].." on "..name )
 				SetRaidTarget( name, StripDice_options.lowIcon[i] )
 			end
 			for i,name in ipairs( StripDice.maxWho ) do
-				print( "Put "..StripDice_options.highIcon[i].." on "..name )
+				--print( "Max: Put "..StripDice_options.highIcon[i].." on "..name )
 				SetRaidTarget( name, StripDice_options.highIcon[i] )
 			end
-
---[[
-
-
-			for who,rolled in pairs( StripDice_games[StripDice.currentGame] ) do
-				--StripDice.Print( who.." -> ".. rolled )
-				StripDice.min = min( rolled, StripDice.min or high )
-				StripDice.max = max( rolled, StripDice.max or low )
-				--StripDice.Print( "min -> "..StripDice.min )
-
-				if( rolled == StripDice.min ) then StripDice.minWho = who end
-				if( rolled == StripDice.max ) then StripDice.maxWho = who end
-			end
-			--StripDice.Print( "Set min on "..StripDice.minWho )
-			if( StripDice_options.lowIcon ) then SetRaidTarget( StripDice.minWho, StripDice_options.lowIcon ) end
-			if( StripDice_options.highIcon ) then SetRaidTarget( StripDice.maxWho, StripDice_options.highIcon ) end
-]]
 		end
 	end
 end
