@@ -1,7 +1,7 @@
 -----------------------------------------
 -- Author  :  Opussf
 -- Date    :  $Date:$
--- Revision:  v1.2-19-gc03d102-xml2src
+-- Revision:  v1.2-30-ge830f92
 -----------------------------------------
 -- These are functions from wow that have been needed by addons so far
 -- Not a complete list of the functions.
@@ -382,9 +382,11 @@ Frame = {
 		["GetName"] = function(self) return self.framename end,
 		["SetFrameStrata"] = function() end,
 		["width"] = 100,
+		["height"] = 100,
 		["SetWidth"] = function(self, value) self.width = value; end,
 		["GetWidth"] = function(self) return( self.width ); end,
 		["SetHeight"] = function(self, value) self.height = value; end,
+		["GetHeight"] = function(self) return( self.height ); end,
 		["CreateFontString"] = function(self, ...) return(CreateFontString(...)) end,
 
 		["SetMinMaxValues"] = function() end,

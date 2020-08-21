@@ -15,6 +15,7 @@ function test.before()
 	test.setDefaultIcons()
 end
 function test.after()
+
 end
 function test.setDefaultIcons()
 	StripDice_options.lowIcon = {1}  -- low icon (star)
@@ -403,5 +404,21 @@ function test.test_CHAT_MSG_SYSTEM_rollSetsMin_groupOf4()
 	assertEquals( 10, StripDice.min[2] )
 	assertEquals( "Bob", StripDice.minWho[2] )
 end
-
+function test.notest_CHAT_MSG_SYSTEM_tag2ndHighestAnd2ndLowest()
+	-- @TODO: is this something I want to do?
+	--test.setDefaultIcons()   -- low = 1-star, high = 7-cross
+	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SYSTEM( {}, "set high none star" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "set low none cross" )
+	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Frank rolls 1 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 20 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Zed rolls 25 (1-100)" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Ivy rolls 69 (1-100)" )
+	assertEquals( 1, StripDice.min[1] )
+	assertEquals( "Frank", StripDice.minWho[1] )
+	assertEquals( 20, StripDice.min[2] )
+	assertEquals( "Bob", StripDice.minWho[2] )
+end
 test.run()
