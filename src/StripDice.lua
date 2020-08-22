@@ -119,7 +119,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 		StripDice.StopGame()
 		StripDice.currentGame = time()
 		StripDice_games[ StripDice.currentGame ] = {}
-		StripDice.LogMsg( "A roll has been started.  Game: "..StripDice.currentGame )
+		StripDice.LogMsg( "A roll has been started.  Game: "..StripDice.currentGame, true )
 
 		local pruneCount = 0
 		for gameTS in pairs( StripDice_games ) do
@@ -156,7 +156,7 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 		if( StripDice.currentGame and StripDice.currentGame + 60 >= time() ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
 				DoEmote( "No", who )
-				StripDice.Print( who.." has already rolled." )
+				StripDice.LogMsg( who.." has already rolled.", true )
 			else
 				StripDice_games[StripDice.currentGame][who] = roll
 			end
@@ -204,8 +204,8 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			numHigh = math.min( numHigh, #StripDice_options.highIcon )
 			numLow = math.min( numLow, #StripDice_options.lowIcon )
 
-			print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
-			print( "high icon count: "..#StripDice_options.highIcon.."   low icon count: "..#StripDice_options.lowIcon )
+			StripDice.LogMsg( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
+			StripDice.LogMsg( "high icon count: "..#StripDice_options.highIcon.."   low icon count: "..#StripDice_options.lowIcon )
 
 			-- find who has the top n rolls
 			--print( "Find Max" )
