@@ -64,6 +64,7 @@ function StripDice.VARIABLES_LOADED()
 	if( pruneCount > 0 ) then
 		StripDice.LogMsg( "Pruned "..pruneCount.." log entries.", true )
 	end
+
 	--StripDice_log = {}
 end
 function StripDice.GROUP_ROSTER_UPDATE()
@@ -104,7 +105,6 @@ function StripDice.CHAT_MSG_SAY( ... )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
 		if( hl ) then
 			local variableName = hl.."Icon"
-			--print( "msg: "..msg )
 			local index = 0
 			for testString in string.gmatch( msg, "%S+" ) do
 				--print( "testString: "..testString )
@@ -126,7 +126,20 @@ function StripDice.CHAT_MSG_SAY( ... )
 					end
 				end
 			end
+		else  -- until the above is refactored to include this setting
+			local value = tonumber( string.match( msg, "(%d+)" ) )
+			if( value ) then
+				print( "value: "..value )
+				for testString in string.gmatch( msg, "%S+" ) do
+					for iconName, iconValue in pairs( StripDice.raidIconValues ) do
+					end
+
+				end
+			end
+
 		end
+	elseif( string.find( msg, "settings" ) ) then -- report the settings
+		StripDice.LogMsg( "report settings here", true)
 	elseif( string.find( msg, "roll" ) ) then  -- roll starts a roll
 		--StripDice.Print( "msg:"..msg )
 		StripDice.StopGame()
