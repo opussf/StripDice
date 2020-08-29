@@ -50,11 +50,19 @@ function StripDice.OnLoad()
 end
 function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
-	StripDice_log = {}
+	expireTS = time() - 604800
+	for _, struct in ipairs( StripDice_log ) do
+		for ts, _ in pairs( struct ) do
+			if( ts < expireTS ) then
+				--StripDice.LogMsg( "Removing "..ts, true )
+				struct = nil
+			end
+		end
+	end
+	--StripDice_log = {}
 end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
-	StripDice.LogMsg( "There are now "..NumGroupMembers.." in your group." )
 	if( NumGroupMembers == 0 ) then  -- turn off listening
 		StripDice.LogMsg( "Deactivating Dice game.", true )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
@@ -69,7 +77,7 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDice.StopGame()
 		StripDice.gameActive = nil
 	elseif( NumGroupMembers > 0 and not StripDice.gameActive ) then
-		StripDice.LogMsg( "Dice game is active.", true )
+		StripDice.LogMsg( "Dice game is active with "..NumGroupMembers.." in the group.", true )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_PARTY" )
