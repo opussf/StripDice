@@ -1,4 +1,4 @@
-STRIPDICE_SLUG = "StripDice"
+STRIPDICE_SLUG, StripDice = ...
 STRIPDICE_MSG_VERSION = GetAddOnMetadata( STRIPDICE_SLUG, "Version" )
 STRIPDICE_MSG_ADDONNAME = GetAddOnMetadata( STRIPDICE_SLUG, "Title" )
 STRIPDICE_MSG_AUTHOR = GetAddOnMetadata( STRIPDICE_SLUG, "Author" )
@@ -7,11 +7,12 @@ STRIPDICE_MSG_AUTHOR = GetAddOnMetadata( STRIPDICE_SLUG, "Author" )
 COLOR_NEON_BLUE = "|cff4d4dff";
 COLOR_END = "|r";
 
-StripDice = {}
+-- StripDice = {}
 StripDice_games = {}
 --	[ts] = {    -- for a game
 --		[player] = roll,
 --	}
+StripDice_log = {}
 StripDice.currentGame = nil   -- probably don't need to do this
 
 StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7} }  -- defaults.  Change this structure....
@@ -35,17 +36,40 @@ function StripDice.Print( msg, showName )
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
+function StripDice.LogMsg( msg, alsoPrint )
+	-- alsoPrint, if set to true, prints to console
+	table.insert( StripDice_log, { [time()] = msg } )
+	if( alsoPrint ) then StripDice.Print( msg ); end
+end
 function StripDice.OnLoad()
 	--StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
 	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
 	StripDiceFrame:RegisterEvent( "PLAYER_ENTERING_WORLD" )
+	StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
 	--StripDice.myName = UnitName( "player" )
+end
+function StripDice.VARIABLES_LOADED()
+	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
+	local expireTS = time() - 604800
+	local pruneCount = 0
+	for _, struct in ipairs( StripDice_log ) do
+		for ts, _ in pairs( struct ) do
+			if( ts < expireTS ) then
+				--StripDice.LogMsg( "Removing "..ts, true )
+				struct = nil
+				pruneCount = pruneCount + 1
+			end
+		end
+	end
+	if( pruneCount > 0 ) then
+		StripDice.LogMsg( "Pruned "..pruneCount.." log entries.", true )
+	end
+	--StripDice_log = {}
 end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
-	--StripDice.Print( "There are now "..NumGroupMembers.." in your group." )
 	if( NumGroupMembers == 0 ) then  -- turn off listening
-		StripDice.Print( "Deactivating Dice game." )
+		StripDice.LogMsg( "Deactivating Dice game.", true )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY" )
@@ -58,7 +82,7 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDice.StopGame()
 		StripDice.gameActive = nil
 	elseif( NumGroupMembers > 0 and not StripDice.gameActive ) then
-		StripDice.Print( "Dice game is active." )
+		StripDice.LogMsg( "Dice game is active with "..NumGroupMembers.." in the group.", true )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_PARTY" )
@@ -108,7 +132,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 		StripDice.StopGame()
 		StripDice.currentGame = time()
 		StripDice_games[ StripDice.currentGame ] = {}
-		StripDice.Print( "A roll has been started.  Game: "..StripDice.currentGame )
+		StripDice.LogMsg( "A roll has been started.  Game: "..StripDice.currentGame, true )
 
 		local pruneCount = 0
 		for gameTS in pairs( StripDice_games ) do
@@ -118,10 +142,10 @@ function StripDice.CHAT_MSG_SAY( ... )
 			end
 		end
 		if( pruneCount > 0 ) then
-			StripDice.Print( "Pruned "..pruneCount.." old games." )
+			StripDice.LogMsg( "Pruned "..pruneCount.." old games.", true )
 		end
 	elseif( StripDice.currentGame and StripDice.currentGame + 60 < time() ) then  -- game is started, and older than 1 minute
-		StripDice.Print( "Game timed out" )
+		StripDice.LogMsg( "Game timed out", true)
 		StripDice.StopGame()
 	end
 end
@@ -145,7 +169,7 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 		if( StripDice.currentGame and StripDice.currentGame + 60 >= time() ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
 				DoEmote( "No", who )
-				StripDice.Print( who.." has already rolled." )
+				StripDice.LogMsg( who.." has already rolled.", true )
 			else
 				StripDice_games[StripDice.currentGame][who] = roll
 			end
@@ -190,7 +214,11 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			if( numHigh == 0 and #StripDice_options.highIcon >= 1 ) then numHigh = 1; end
 			if( numLow  == 0 and #StripDice_options.lowIcon >= 1 ) then numLow  = 1; end
 
-			--print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
+			numHigh = math.min( numHigh, #StripDice_options.highIcon )
+			numLow = math.min( numLow, #StripDice_options.lowIcon )
+
+			StripDice.LogMsg( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
+			StripDice.LogMsg( "high icon count: "..#StripDice_options.highIcon.."   low icon count: "..#StripDice_options.lowIcon )
 
 			-- find who has the top n rolls
 			--print( "Find Max" )
@@ -222,11 +250,11 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			end
 			for i,name in ipairs( StripDice.minWho ) do
 				--print( "Min: Put "..StripDice_options.lowIcon[i].." on "..name )
-				SetRaidTarget( name, StripDice_options.lowIcon[i] )
+				SetRaidTarget( name, ( StripDice_options.lowIcon[i] or 0 ) )
 			end
 			for i,name in ipairs( StripDice.maxWho ) do
 				--print( "Max: Put "..StripDice_options.highIcon[i].." on "..name )
-				SetRaidTarget( name, StripDice_options.highIcon[i] )
+				SetRaidTarget( name, ( StripDice_options.highIcon[i] or 0 ) )
 			end
 		end
 	end
