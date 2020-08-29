@@ -1,4 +1,4 @@
-STRIPDICE_SLUG = "StripDice"
+STRIPDICE_SLUG, StripDice = ...
 STRIPDICE_MSG_VERSION = GetAddOnMetadata( STRIPDICE_SLUG, "Version" )
 STRIPDICE_MSG_ADDONNAME = GetAddOnMetadata( STRIPDICE_SLUG, "Title" )
 STRIPDICE_MSG_AUTHOR = GetAddOnMetadata( STRIPDICE_SLUG, "Author" )
@@ -7,7 +7,7 @@ STRIPDICE_MSG_AUTHOR = GetAddOnMetadata( STRIPDICE_SLUG, "Author" )
 COLOR_NEON_BLUE = "|cff4d4dff";
 COLOR_END = "|r";
 
-StripDice = {}
+-- StripDice = {}
 StripDice_games = {}
 --	[ts] = {    -- for a game
 --		[player] = roll,
@@ -50,14 +50,19 @@ function StripDice.OnLoad()
 end
 function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
-	expireTS = time() - 604800
+	local expireTS = time() - 604800
+	local pruneCount = 0
 	for _, struct in ipairs( StripDice_log ) do
 		for ts, _ in pairs( struct ) do
 			if( ts < expireTS ) then
 				--StripDice.LogMsg( "Removing "..ts, true )
 				struct = nil
+				pruneCount = pruneCount + 1
 			end
 		end
+	end
+	if( pruneCount > 0 ) then
+		StripDice.LogMsg( "Pruned "..pruneCount.." log entries.", true )
 	end
 	--StripDice_log = {}
 end
