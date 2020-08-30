@@ -52,20 +52,20 @@ function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
 	local expireTS = time() - 604800
 	local pruneCount = 0
-	for _, struct in ipairs( StripDice_log ) do
-		for ts, _ in pairs( struct ) do
+	local doPrune = true
+	while( doPrune ) do
+		for ts, _ in pairs( StripDice_log[1] ) do
 			if( ts < expireTS ) then
-				--StripDice.LogMsg( "Removing "..ts, true )
-				struct = nil
+				table.remove( StripDice_log, 1 )
 				pruneCount = pruneCount + 1
+			else
+				doPrune = false
 			end
 		end
 	end
 	if( pruneCount > 0 ) then
 		StripDice.LogMsg( "Pruned "..pruneCount.." log entries.", true )
 	end
-
-	--StripDice_log = {}
 end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
@@ -100,7 +100,12 @@ StripDice.PLAYER_ENTERING_WORLD = StripDice.GROUP_ROSTER_UPDATE
 function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
 	msg = string.lower( msg )
-	if( string.find( msg, "set" ) ) then  -- set is the key word here
+	if( string.find( msg, "settings" ) ) then -- report the settings
+		local reportStr = ""
+
+
+		StripDice.LogMsg( "report settings here", true)
+	elseif( string.find( msg, "set" ) ) then  -- set is the key word here
 		--print( msg )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
 		if( hl ) then
@@ -133,13 +138,10 @@ function StripDice.CHAT_MSG_SAY( ... )
 				for testString in string.gmatch( msg, "%S+" ) do
 					for iconName, iconValue in pairs( StripDice.raidIconValues ) do
 					end
-
 				end
 			end
 
 		end
-	elseif( string.find( msg, "settings" ) ) then -- report the settings
-		StripDice.LogMsg( "report settings here", true)
 	elseif( string.find( msg, "roll" ) ) then  -- roll starts a roll
 		--StripDice.Print( "msg:"..msg )
 		StripDice.StopGame()
