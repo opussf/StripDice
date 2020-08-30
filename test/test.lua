@@ -12,6 +12,7 @@ test.outFileName = "testOut.xml"
 function test.before()
 	myParty = { roster = {} }
 	playerRange = {}
+	StripDice_log = {}
 	test.setDefaultIcons()
 end
 function test.after()
@@ -422,9 +423,30 @@ function test.notest_CHAT_MSG_SYSTEM_tag2ndHighestAnd2ndLowest()
 	assertEquals( 20, StripDice.min[2] )
 	assertEquals( "Bob", StripDice.minWho[2] )
 end
-
+-----------------------------------------
+-- Tests for logMsg prune
+function test.printLog()
+	for i, struct in ipairs( StripDice_log ) do
+		for ts, log in pairs( StripDice_log[i] ) do
+			print( i..": "..log )
+		end
+	end
+end
+function test.test_LogMsg_Prune_01()
+	StripDice_log = { { [1] = "This is very old" }, { [time()-5000000] = "This is old too" } }
+	StripDice.VARIABLES_LOADED()
+	--test.printLog()
+	assertEquals( 1, #StripDice_log )
+end
+function test.test_LogMsg_Prune_02()
+	StripDice_log = { { [1] = "This is very old" }, { [time()-5000000] = "This is old too" }, { [time()] = "This is now" } }
+	StripDice.VARIABLES_LOADED()
+	--test.printLog()
+	assertEquals( 2, #StripDice_log )
+end
 -----------------------------------------
 -- Tests for setting an icon for a specific roll
+--[[
 
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue()
 	StripDice.PLAYER_ENTERING_WORLD()
@@ -476,13 +498,13 @@ function test.test_CHAT_MSG_SYSTEM_setHasNoGoodSettings()
 	StripDice.CHAT_MSG_SAY( {}, "set into the sun" )
 	assertEquals( 1, StripDice_options.highIcon[1] )
 end
-
+]]
 -----------------------------------------
 -- Tests for settings report
 function test.test_CHAT_MSG_SYSTEM_report()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "settings" )
-	assertEquals( "High rolls: {cross}, Low rolls: {star}", StripDice_log[#StripDice_log][time()] )
+	assertEquals( "High: {cross}, Low: {star}", StripDice_log[#StripDice_log][time()] )
 end
 
 test.run()

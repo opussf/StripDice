@@ -54,13 +54,17 @@ function StripDice.VARIABLES_LOADED()
 	local pruneCount = 0
 	local doPrune = true
 	while( doPrune ) do
-		for ts, _ in pairs( StripDice_log[1] ) do
-			if( ts < expireTS ) then
-				table.remove( StripDice_log, 1 )
-				pruneCount = pruneCount + 1
-			else
-				doPrune = false
+		if( StripDice_log and StripDice_log[1] ~= nil ) then    -- has to exist, and have something at index 1
+			for ts, _ in pairs( StripDice_log[1] ) do           -- look in the pairs, since we don't know the key value
+				if( ts < expireTS ) then                        -- if this is too old, remove it
+					table.remove( StripDice_log, 1 )
+					pruneCount = pruneCount + 1
+				else                                            -- all others will be too young to delete, stop
+					doPrune = false
+				end
 			end
+		else                                                    -- nothing exists to process
+			doPrune = false
 		end
 	end
 	if( pruneCount > 0 ) then
@@ -101,10 +105,23 @@ function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
 	msg = string.lower( msg )
 	if( string.find( msg, "settings" ) ) then -- report the settings
-		local reportStr = ""
-
-
-		StripDice.LogMsg( "report settings here", true)
+		local reportTables = {
+				{ ["t"] = "highIcon", ["str"] = "High" },
+				{ ["t"] = "lowIcon", ["str"] = "Low" }
+		}
+		local reportTable = {}
+		for _, struct in ipairs( reportTables ) do
+			local reportStr = struct.str .. ":"
+			for _, iconNum in ipairs( StripDice_options[struct.t] ) do
+				for iconName, num in pairs( StripDice.raidIconValues ) do
+					if( num == iconNum ) then
+						reportStr = string.format( "%s {%s}", reportStr, iconName )
+					end
+				end
+			end
+			table.insert( reportTable, reportStr )
+		end
+		StripDice.LogMsg( table.concat( reportTable, ", " ) , true )
 	elseif( string.find( msg, "set" ) ) then  -- set is the key word here
 		--print( msg )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
