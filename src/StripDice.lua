@@ -15,7 +15,9 @@ StripDice_games = {}
 StripDice_log = {}
 StripDice.currentGame = nil   -- probably don't need to do this
 
-StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7} }  -- defaults.  Change this structure....
+StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7}, ["specificRollIcon"] = {} }  -- defaults.  Change this structure....
+-- lowIcon and highIcon are [1] = 8, [2] = 3  ( position = icon value )
+-- specificRollIcon is [roll] = icon value
 
 StripDice.raidIconValues = {  -- will be used later to allow control
 	["none"] = 0,
@@ -32,7 +34,9 @@ function StripDice.Print( msg, showName )
 	-- print to the chat frame
 	-- set showName to false to suppress the addon name printing
 	if (showName == nil) or (showName) then
-		msg = COLOR_NEON_BLUE.."StripDice> "..COLOR_END..msg
+		msg = string.format( "%s%s>%s %s",
+				COLOR_NEON_BLUE, STRIPDICE_SLUG, COLOR_END, msg )
+		--msg = COLOR_NEON_BLUE.."StripDice>"..COLOR_END..msg
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
@@ -42,7 +46,6 @@ function StripDice.LogMsg( msg, alsoPrint )
 	if( alsoPrint ) then StripDice.Print( msg ); end
 end
 function StripDice.OnLoad()
-	--StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
 	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
 	StripDiceFrame:RegisterEvent( "PLAYER_ENTERING_WORLD" )
 	StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
@@ -100,6 +103,11 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDice.gameActive = true
 	end
 end
+function StripDice.RemoveIconFromOtherSettings( iconValue, skipTableName )
+	-- take the iconValue to search for
+	-- skip the named table
+
+end
 StripDice.PLAYER_ENTERING_WORLD = StripDice.GROUP_ROSTER_UPDATE
 function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
@@ -107,7 +115,8 @@ function StripDice.CHAT_MSG_SAY( ... )
 	if( string.find( msg, "settings" ) ) then -- report the settings
 		local reportTables = {
 				{ ["t"] = "highIcon", ["str"] = "High" },
-				{ ["t"] = "lowIcon", ["str"] = "Low" }
+				{ ["t"] = "lowIcon", ["str"] = "Low" },
+				{ ["t"] = "specificRollIcon", ["str"] = "Specific" }
 		}
 		local reportTable = {}
 		for _, struct in ipairs( reportTables ) do
@@ -154,6 +163,17 @@ function StripDice.CHAT_MSG_SAY( ... )
 				print( "value: "..value )
 				for testString in string.gmatch( msg, "%S+" ) do
 					for iconName, iconValue in pairs( StripDice.raidIconValues ) do
+						if( string.match( testString, iconName ) ) then
+							StripDice.LogMsg( "Found "..iconName.." in msg", true )
+							if( not StripDice_options.specificRollIcon ) then
+								StripDice_options.specificRollIcon = {}
+							end
+							StripDice_options.specificRollIcon[value] = ( iconValue > 0 and iconValue or nil )
+							-- search for this icon elsewhere and clear it.
+							--for setting, settingTable in pairs
+
+						end
+
 					end
 				end
 			end
@@ -309,3 +329,4 @@ function StripDice.StopGame()
 	StripDice.max = nil
 	StripDice.maxWho = nil
 end
+

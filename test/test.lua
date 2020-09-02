@@ -21,7 +21,7 @@ end
 function test.setDefaultIcons()
 	StripDice_options.lowIcon = {1}  -- low icon (star)
 	StripDice_options.highIcon = {7} -- high icon (cross)
-	StripDice_options.specificRollIcon = nil -- default value is nil
+	StripDice_options.specificRollIcon = {} -- default value is empty
 end
 
 function test.test_HasSaveTable()
@@ -444,10 +444,9 @@ function test.test_LogMsg_Prune_02()
 	--test.printLog()
 	assertEquals( 2, #StripDice_log )
 end
+
 -----------------------------------------
 -- Tests for setting an icon for a specific roll
---[[
-
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set 69 to circle" )
@@ -456,6 +455,11 @@ end
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_brief()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	assertEquals( 2, StripDice_options.specificRollIcon[69] )
+end
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_brief_reversed()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set {circle} 69" )
 	assertEquals( 2, StripDice_options.specificRollIcon[69] )
 end
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_clear()
@@ -498,13 +502,15 @@ function test.test_CHAT_MSG_SYSTEM_setHasNoGoodSettings()
 	StripDice.CHAT_MSG_SAY( {}, "set into the sun" )
 	assertEquals( 1, StripDice_options.highIcon[1] )
 end
-]]
+
 -----------------------------------------
 -- Tests for settings report
 function test.test_CHAT_MSG_SYSTEM_report()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "settings" )
 	assertEquals( "High: {cross}, Low: {star}", StripDice_log[#StripDice_log][time()] )
+end
+function test.test_CHAT_MSG_SYSTEM_report_specific()
 end
 
 test.run()
