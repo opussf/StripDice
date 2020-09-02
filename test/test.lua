@@ -471,7 +471,7 @@ function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_clear()
 	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
 	--assertEquals( 2, StripDice_options.specificRollIcon[69] )
 	StripDice.CHAT_MSG_SAY( {}, "set 69 none" )
-	assertIsNil( StripDice_options.specificRollIcon )
+	assertIsNil( StripDice_options.specificRollIcon[69] )
 end
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_takesIconFromLow()
 	-- remove the icon from the low roll setting
@@ -505,7 +505,7 @@ end
 function test.test_CHAT_MSG_SYSTEM_setHasNoGoodSettings()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set into the sun" )
-	assertEquals( 1, StripDice_options.highIcon[1] )
+	assertEquals( 7, StripDice_options.highIcon[1] )
 end
 
 -----------------------------------------
@@ -515,7 +515,11 @@ function test.test_CHAT_MSG_SYSTEM_report()
 	StripDice.CHAT_MSG_SAY( {}, "settings" )
 	assertEquals( "High: {cross}, Low: {star}", StripDice_log[#StripDice_log][time()] )
 end
-function test.test_CHAT_MSG_SYSTEM_report_specific()
+function test.test_CHAT_MSG_SYSTEM_report_list()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low star skull" )
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}, {skull}", StripDice_log[#StripDice_log][time()] )
 end
 
 test.run()
