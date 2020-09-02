@@ -124,20 +124,6 @@ function StripDice.RemoveIconFromOtherSettings( iconValue, skipTableName )
 					end
 				end
 			end
-
-			--[[
-			-- search for this icon elsewhere and clear it.
-						for setting, settingTable in pairs( StripDice_options ) do
-							for i, val in pairs( settingTable ) do
-								--print( "value: "..val.." =? "..iconValue.."  index: "..i.." =? "..index.."  setting: "..setting.." =? "..variableName )
-								if( val == iconValue and ( i ~= index or setting ~= variableName ) ) then
-									--print( "setting "..setting.."["..i.."] to nil" )
-									StripDice_options[setting][i] = nil
-								end
-							end
-						end
-						]]
-
 		end
 	end
 end
@@ -146,6 +132,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
 	msg = string.lower( msg )
 	if( string.find( msg, "settings" ) ) then -- report the settings
+		StripDice.LogMsg( "Show settings", true )
 		local reportTables = {
 				{ ["t"] = "highIcon", ["str"] = "High" },
 				{ ["t"] = "lowIcon", ["str"] = "Low" },
@@ -153,16 +140,21 @@ function StripDice.CHAT_MSG_SAY( ... )
 		}
 		local reportTable = {}
 		for _, struct in ipairs( reportTables ) do
-			local reportStr = struct.str .. ":"
+			--local reportStr = struct.str .. ":"
 			local count = 0
+			local iconList = {}
 			for _, iconNum in ipairs( StripDice_options[struct.t] ) do
 				for iconName, num in pairs( StripDice.raidIconValues ) do
 					if( num == iconNum ) then
-						reportStr = string.format( "%s {%s}", reportStr, iconName )  ---    !!!!  @TODO  rewrite this....
+						table.insert( iconList, "{"..iconName.."}" )
+
+			--			reportStr = string.format( "%s {%s}", reportStr, iconName )  ---    !!!!  @TODO  rewrite this....
 					end
 				end
 			end
-			table.insert( reportTable, reportStr )
+			if( #iconList > 0 ) then
+				table.insert( reportTable, string.format( "%s: %s", struct.str, table.concat( iconList, ", " ) ) )
+			end
 		end
 		StripDice.LogMsg( table.concat( reportTable, ", " ) , true )
 	elseif( string.find( msg, "set" ) ) then  -- set is the key word here
@@ -172,7 +164,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 			local variableName = hl.."Icon"
 			local index = 0
 			for testString in string.gmatch( msg, "%S+" ) do
-				--print( "testString: "..testString )
+				--StripDice.LogMsg( "testString: "..testString, true )
 				for iconName, iconValue in pairs( StripDice.raidIconValues ) do
 					if( string.match( testString, iconName ) ) then
 						if( index == 0 ) then StripDice_options[variableName] = {}; end
@@ -185,7 +177,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 		else  -- until the above is refactored to include this setting
 			local value = tonumber( string.match( msg, "(%d+)" ) )
 			if( value ) then
-				print( "value: "..value )
+				--print( "value: "..value )
 				for testString in string.gmatch( msg, "%S+" ) do
 					for iconName, iconValue in pairs( StripDice.raidIconValues ) do
 						if( string.match( testString, iconName ) ) then
@@ -194,12 +186,8 @@ function StripDice.CHAT_MSG_SAY( ... )
 								StripDice_options.specificRollIcon = {}
 							end
 							StripDice_options.specificRollIcon[value] = ( iconValue > 0 and iconValue or nil )
-
-							-- search for this icon elsewhere and clear it.
-							--for setting, settingTable in pairs
 							StripDice.RemoveIconFromOtherSettings( iconValue, "specificRollIcon" )
 						end
-
 					end
 				end
 			end
