@@ -448,21 +448,25 @@ end
 -----------------------------------------
 -- Tests for setting an icon for a specific roll
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue()
+	-- set an icon to the specificRollIcon settings
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set 69 to circle" )
 	assertEquals( 2, StripDice_options.specificRollIcon[69] )
 end
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_brief()
+	-- set an icon to the specificRollIcon settings
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
 	assertEquals( 2, StripDice_options.specificRollIcon[69] )
 end
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_brief_reversed()
+	-- set an icon to the specificRollIcon settings
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set {circle} 69" )
 	assertEquals( 2, StripDice_options.specificRollIcon[69] )
 end
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_clear()
+	-- set and then clear the specificRollIcon value
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
 	--assertEquals( 2, StripDice_options.specificRollIcon[69] )
@@ -470,6 +474,7 @@ function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_clear()
 	assertIsNil( StripDice_options.specificRollIcon )
 end
 function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_takesIconFromLow()
+	-- remove the icon from the low roll setting
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low circle" )
 	--assertEquals( 2, StripDice_options.lowIcon[1] )

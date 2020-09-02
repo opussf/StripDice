@@ -15,7 +15,7 @@ StripDice_games = {}
 StripDice_log = {}
 StripDice.currentGame = nil   -- probably don't need to do this
 
-StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7}, ["specificRollIcon"] = {} }  -- defaults.  Change this structure....
+StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7}, ["specificRollIcon"] = {} }  -- defaults.
 -- lowIcon and highIcon are [1] = 8, [2] = 3  ( position = icon value )
 -- specificRollIcon is [roll] = icon value
 
@@ -106,7 +106,40 @@ end
 function StripDice.RemoveIconFromOtherSettings( iconValue, skipTableName )
 	-- take the iconValue to search for
 	-- skip the named table
+	local popTable = { ["lowIcon"] = true, ["highIcon"] = true }
+	for settingTable, struct in pairs( StripDice_options ) do
+		StripDice.LogMsg( "Table: "..settingTable, true )
+		if( settingTable ~= skipTableName ) then
+			StripDice.LogMsg( "Remove from table", true )
+			for i, val in pairs( struct ) do
+				StripDice.LogMsg( "table: "..settingTable.." value: "..val.." =? "..iconValue.."  index: "..i, true )
+				if( val == iconValue ) then
+					StripDice.LogMsg( "Matched value, remove it.", true )
+					if( popTable[settingTable] ) then
+						StripDice.LogMsg( "Popping from table at pos: "..i, true )
+						table.remove( StripDice_options[settingTable], i )
+					else
+						StripDice.LogMsg( "Setting index "..i.." to nil.", true )
+						StripDice_options[settingTable][i] = nil
+					end
+				end
+			end
 
+			--[[
+			-- search for this icon elsewhere and clear it.
+						for setting, settingTable in pairs( StripDice_options ) do
+							for i, val in pairs( settingTable ) do
+								--print( "value: "..val.." =? "..iconValue.."  index: "..i.." =? "..index.."  setting: "..setting.." =? "..variableName )
+								if( val == iconValue and ( i ~= index or setting ~= variableName ) ) then
+									--print( "setting "..setting.."["..i.."] to nil" )
+									StripDice_options[setting][i] = nil
+								end
+							end
+						end
+						]]
+
+		end
+	end
 end
 StripDice.PLAYER_ENTERING_WORLD = StripDice.GROUP_ROSTER_UPDATE
 function StripDice.CHAT_MSG_SAY( ... )
@@ -121,10 +154,11 @@ function StripDice.CHAT_MSG_SAY( ... )
 		local reportTable = {}
 		for _, struct in ipairs( reportTables ) do
 			local reportStr = struct.str .. ":"
+			local count = 0
 			for _, iconNum in ipairs( StripDice_options[struct.t] ) do
 				for iconName, num in pairs( StripDice.raidIconValues ) do
 					if( num == iconNum ) then
-						reportStr = string.format( "%s {%s}", reportStr, iconName )
+						reportStr = string.format( "%s {%s}", reportStr, iconName )  ---    !!!!  @TODO  rewrite this....
 					end
 				end
 			end
@@ -144,16 +178,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 						if( index == 0 ) then StripDice_options[variableName] = {}; end
 						index = index + 1
 						StripDice_options[variableName][index] = ( iconValue > 0 and iconValue or nil )
-						-- search for this icon elsewhere and clear it.
-						for setting, settingTable in pairs( StripDice_options ) do
-							for i, val in pairs( settingTable ) do
-								--print( "value: "..val.." =? "..iconValue.."  index: "..i.." =? "..index.."  setting: "..setting.." =? "..variableName )
-								if( val == iconValue and ( i ~= index or setting ~= variableName ) ) then
-									--print( "setting "..setting.."["..i.."] to nil" )
-									StripDice_options[setting][i] = nil
-								end
-							end
-						end
+						StripDice.RemoveIconFromOtherSettings( iconValue, variableName )
 					end
 				end
 			end
@@ -169,9 +194,10 @@ function StripDice.CHAT_MSG_SAY( ... )
 								StripDice_options.specificRollIcon = {}
 							end
 							StripDice_options.specificRollIcon[value] = ( iconValue > 0 and iconValue or nil )
+
 							-- search for this icon elsewhere and clear it.
 							--for setting, settingTable in pairs
-
+							StripDice.RemoveIconFromOtherSettings( iconValue, "specificRollIcon" )
 						end
 
 					end
