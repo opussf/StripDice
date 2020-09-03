@@ -44,11 +44,3 @@ jobs:
       # Runs a single command using the runners shell
       - name: Build with ant
         run: ant package
-
-      # upload may cost money.  This is BAD
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: package
-#          path: |
-#            target/*.zip
-#            target/*.md5
