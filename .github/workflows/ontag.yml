@@ -5,7 +5,7 @@ name: StripDice Create Release
 on:
   push:
     tags:
-      - *
+      - '*'
 
 jobs:
   build:
