@@ -15,7 +15,7 @@ StripDice_games = {}
 StripDice_log = {}
 StripDice.currentGame = nil   -- probably don't need to do this
 
-StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7}, ["specificRollIcon"] = {} }  -- defaults.
+StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7} }  -- defaults.
 -- lowIcon and highIcon are [1] = 8, [2] = 3  ( position = icon value )
 -- specificRollIcon is [roll] = icon value
 

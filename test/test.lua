@@ -272,7 +272,7 @@ end
 function test.test_SetLowIcon_SameAsHighIcon_CHAT_MSG_SAY()
 	-- this should probably clear the highIcon
 	--test.setDefaultIcons()
-	print( "high icon[1]: "..StripDice_options.highIcon[1] )
+	--print( "high icon[1]: "..StripDice_options.highIcon[1] )
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low icon to cross" )
 	assertEquals( 7, StripDice_options.lowIcon[1] )
@@ -522,8 +522,19 @@ function test.test_CHAT_MSG_SYSTEM_rollSpecificNum_noMax_noMin()
 	assertEquals( "Bob", StripDice.specificWho[1] )
 end
 function test.test_CHAT_MSG_SYSTEM_rollSpecific_noSpecificTable()
+	-- because specificRollIcon might be nil
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice_options.specificRollIcon = nil
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	StripDice.CHAT_MSG_SAY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 69 (1-100)" )
+	assertIsNil( StripDice.specificWho[1] )
+end
+function test.notest_CHAT_MSG_SYSTEM_nilValues_nilHigh()
+	-- I'm not sure when this would happen
+	-- @TODO: remove this test
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice_options.highIcon = nil
 	StripDice.CHAT_MSG_SAY( {}, "settings" )
 	StripDice.CHAT_MSG_SAY( {}, "roll" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 69 (1-100)" )
