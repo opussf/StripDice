@@ -521,6 +521,14 @@ function test.test_CHAT_MSG_SYSTEM_rollSpecificNum_noMax_noMin()
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 69 (1-100)" )
 	assertEquals( "Bob", StripDice.specificWho[1] )
 end
+function test.test_CHAT_MSG_SYSTEM_rollSpecific_noSpecificTable()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice_options.specificRollIcon = nil
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	StripDice.CHAT_MSG_SAY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 69 (1-100)" )
+	assertIsNil( StripDice.specificWho[1] )
+end
 
 -----------------------------------------
 -- Tests for settings report

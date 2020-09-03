@@ -334,7 +334,7 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			--print( "Find Specific" )
 			StripDice.specificWho = {}
 			for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
-				if( StripDice_options.specificRollIcon[roll] ) then
+				if( StripDice_options.specificRollIcon and StripDice_options.specificRollIcon[roll] ) then
 					StripDice.LogMsg( "Specific: Put "..StripDice_options.specificRollIcon[roll].." on "..name )
 					table.insert( StripDice.specificWho, name )
 					SetRaidTarget( name, ( StripDice_options.specificRollIcon[roll] or 0 ) )
