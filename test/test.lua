@@ -12,6 +12,7 @@ test.outFileName = "testOut.xml"
 function test.before()
 	myParty = { roster = {} }
 	playerRange = {}
+	StripDice_log = {}
 	test.setDefaultIcons()
 end
 function test.after()
@@ -20,6 +21,7 @@ end
 function test.setDefaultIcons()
 	StripDice_options.lowIcon = {1}  -- low icon (star)
 	StripDice_options.highIcon = {7} -- high icon (cross)
+	StripDice_options.specificRollIcon = {} -- default value is empty
 end
 
 function test.test_HasSaveTable()
@@ -204,9 +206,10 @@ function test.test_CHAT_MSG_SYSTEM_rerolls()
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	local now = time()
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 35 (1-100)" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 95 (1-100)" )
-	assertEquals( 35, StripDice_games[time()]["Bob"] )
+	assertEquals( 35, StripDice_games[now]["Bob"] )
 end
 function test.test_CHAT_MSG_SYSTEM_rollSetsMin()
 	--test.setDefaultIcons()   -- low = 1-star, high = 7-cross
@@ -269,7 +272,7 @@ end
 function test.test_SetLowIcon_SameAsHighIcon_CHAT_MSG_SAY()
 	-- this should probably clear the highIcon
 	--test.setDefaultIcons()
-	print( "high icon[1]: "..StripDice_options.highIcon[1] )
+	--print( "high icon[1]: "..StripDice_options.highIcon[1] )
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low icon to cross" )
 	assertEquals( 7, StripDice_options.lowIcon[1] )
@@ -421,4 +424,156 @@ function test.notest_CHAT_MSG_SYSTEM_tag2ndHighestAnd2ndLowest()
 	assertEquals( 20, StripDice.min[2] )
 	assertEquals( "Bob", StripDice.minWho[2] )
 end
+-----------------------------------------
+-- Tests for logMsg prune
+function test.printLog()
+	for i, struct in ipairs( StripDice_log ) do
+		for ts, log in pairs( StripDice_log[i] ) do
+			print( i..": "..log )
+		end
+	end
+end
+function test.test_LogMsg_Prune_01()
+	StripDice_log = { { [1] = "This is very old" }, { [time()-5000000] = "This is old too" } }
+	StripDice.VARIABLES_LOADED()
+	--test.printLog()
+	assertEquals( 1, #StripDice_log )
+end
+function test.test_LogMsg_Prune_02()
+	StripDice_log = { { [1] = "This is very old" }, { [time()-5000000] = "This is old too" }, { [time()] = "This is now" } }
+	StripDice.VARIABLES_LOADED()
+	--test.printLog()
+	assertEquals( 2, #StripDice_log )
+end
+
+-----------------------------------------
+-- Tests for setting an icon for a specific roll
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue()
+	-- set an icon to the specificRollIcon settings
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set 69 to circle" )
+	assertEquals( 2, StripDice_options.specificRollIcon[69] )
+end
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_brief()
+	-- set an icon to the specificRollIcon settings
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	assertEquals( 2, StripDice_options.specificRollIcon[69] )
+end
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_brief_reversed()
+	-- set an icon to the specificRollIcon settings
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set {circle} 69" )
+	assertEquals( 2, StripDice_options.specificRollIcon[69] )
+end
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_clear()
+	-- set and then clear the specificRollIcon value
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	--assertEquals( 2, StripDice_options.specificRollIcon[69] )
+	StripDice.CHAT_MSG_SAY( {}, "set 69 none" )
+	assertIsNil( StripDice_options.specificRollIcon[69] )
+end
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_takesIconFromLow()
+	-- remove the icon from the low roll setting
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low circle" )
+	--assertEquals( 2, StripDice_options.lowIcon[1] )
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	assertIsNil( StripDice_options.lowIcon[1] )
+end
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_takesIconFromLow_multiple_clearLow()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low circle star" )
+	--assertEquals( 2, StripDice_options.lowIcon[1] )
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	assertEquals( 1, StripDice_options.lowIcon[1] )
+end
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_takesIconFromHigh()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set high circle" )
+	--assertEquals( 2, StripDice_options.lowIcon[1] )
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	assertIsNil( StripDice_options.highIcon[1] )
+end
+function test.test_CHAT_MSG_SYSTEM_setSpecificRollValue_takesIconFromHigh_multiple_clearLow()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set high circle star" )
+	--assertEquals( 2, StripDice_options.lowIcon[1] )
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	assertEquals( 1, StripDice_options.highIcon[1] )
+end
+function test.test_CHAT_MSG_SYSTEM_setHasNoGoodSettings()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set into the sun" )
+	assertEquals( 7, StripDice_options.highIcon[1] )
+end
+
+-----------------------------------------
+-- Tests for rolling a specific Number
+function test.test_CHAT_MSG_SYSTEM_rollSpecificNum_noMax_noMin()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set high none" )
+	StripDice.CHAT_MSG_SAY( {}, "set low none" )
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	StripDice.CHAT_MSG_SAY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 69 (1-100)" )
+	assertEquals( "Bob", StripDice.specificWho[1] )
+end
+function test.test_CHAT_MSG_SYSTEM_rollSpecific_noSpecificTable()
+	-- because specificRollIcon might be nil
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice_options.specificRollIcon = nil
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	StripDice.CHAT_MSG_SAY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 69 (1-100)" )
+	assertIsNil( StripDice.specificWho[1] )
+end
+function test.notest_CHAT_MSG_SYSTEM_nilValues_nilHigh()
+	-- I'm not sure when this would happen
+	-- @TODO: remove this test
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice_options.highIcon = nil
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	StripDice.CHAT_MSG_SAY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 69 (1-100)" )
+	assertIsNil( StripDice.specificWho[1] )
+end
+
+-----------------------------------------
+-- Tests for settings report
+function test.test_CHAT_MSG_SYSTEM_report()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}", StripDice_log[#StripDice_log][time()] )
+end
+function test.test_CHAT_MSG_SYSTEM_report_list()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set low star skull" )
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}, {skull}", StripDice_log[#StripDice_log][time()] )
+end
+function test.test_CHAT_MSG_SYSTEM_report_settingsOnUpdate()
+	-- test to see if an updated system handles settings command
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice_options.specificRollIcon = nil
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}", StripDice_log[#StripDice_log][time()] )
+end
+function test.test_CHAT_MSG_SYSTEM_report_settingsWithSpecific()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}, Specific: 69-{circle}", StripDice_log[#StripDice_log][time()] )
+end
+function test.test_CHAT_MSG_SYSTEM_report_settingsWithMultipleSpecific()
+	-- this may be unstable....
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	StripDice.CHAT_MSG_SAY( {}, "set 42 diamond" )
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}, Specific: 42-{diamond}, 69-{circle}", StripDice_log[#StripDice_log][time()] )
+end
+
 test.run()
