@@ -7,4 +7,4 @@ An addon to facilitate playing StripDice.
 Places a raid icon on the heads of participants who satisfy some game conditions.
 From having highest, or lowest, or specific rolls.
 
-See [Readme.txt](src/Readme.txt) for more info.
+See [src/Readme.txt](src/Readme.txt) for more info.
