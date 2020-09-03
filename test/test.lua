@@ -206,9 +206,10 @@ function test.test_CHAT_MSG_SYSTEM_rerolls()
 	myParty = { ["group"] = 1, ["roster"] = { "Frank","Bob" } }
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_PARTY( {}, "roll" )
+	local now = time()
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 35 (1-100)" )
 	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 95 (1-100)" )
-	assertEquals( 35, StripDice_games[time()]["Bob"] )
+	assertEquals( 35, StripDice_games[now]["Bob"] )
 end
 function test.test_CHAT_MSG_SYSTEM_rollSetsMin()
 	--test.setDefaultIcons()   -- low = 1-star, high = 7-cross

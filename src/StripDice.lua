@@ -108,13 +108,13 @@ function StripDice.RemoveIconFromOtherSettings( iconValue, skipTableName )
 	-- skip the named table
 	local popTable = { ["lowIcon"] = true, ["highIcon"] = true }
 	for settingTable, struct in pairs( StripDice_options ) do
-		StripDice.LogMsg( "Table: "..settingTable, true )
+		--StripDice.LogMsg( "Table: "..settingTable, true )
 		if( settingTable ~= skipTableName ) then
-			StripDice.LogMsg( "Remove from table", true )
+			--StripDice.LogMsg( "Remove from table", true )
 			for i, val in pairs( struct ) do
-				StripDice.LogMsg( "table: "..settingTable.." value: "..val.." =? "..iconValue.."  index: "..i, true )
+				--StripDice.LogMsg( "table: "..settingTable.." value: "..val.." =? "..iconValue.."  index: "..i, true )
 				if( val == iconValue ) then
-					StripDice.LogMsg( "Matched value, remove it.", true )
+					--StripDice.LogMsg( "Matched value, remove it.", true )
 					if( popTable[settingTable] ) then
 						StripDice.LogMsg( "Popping from table at pos: "..i, true )
 						table.remove( StripDice_options[settingTable], i )
