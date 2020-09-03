@@ -116,10 +116,10 @@ function StripDice.RemoveIconFromOtherSettings( iconValue, skipTableName )
 				if( val == iconValue ) then
 					--StripDice.LogMsg( "Matched value, remove it.", true )
 					if( popTable[settingTable] ) then
-						StripDice.LogMsg( "Popping from table at pos: "..i, true )
+						--StripDice.LogMsg( "Popping from table at pos: "..i, true )
 						table.remove( StripDice_options[settingTable], i )
 					else
-						StripDice.LogMsg( "Setting index "..i.." to nil.", true )
+						--StripDice.LogMsg( "Setting index "..i.." to nil.", true )
 						StripDice_options[settingTable][i] = nil
 					end
 				end
@@ -181,7 +181,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 				for testString in string.gmatch( msg, "%S+" ) do
 					for iconName, iconValue in pairs( StripDice.raidIconValues ) do
 						if( string.match( testString, iconName ) ) then
-							StripDice.LogMsg( "Found "..iconName.." in msg", true )
+							--StripDice.LogMsg( "Found "..iconName.." in msg", true )
 							if( not StripDice_options.specificRollIcon ) then
 								StripDice_options.specificRollIcon = {}
 							end
