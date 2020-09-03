@@ -15,7 +15,9 @@ StripDice_games = {}
 StripDice_log = {}
 StripDice.currentGame = nil   -- probably don't need to do this
 
-StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7} }  -- defaults.  Change this structure....
+StripDice_options = { ["lowIcon"] = {1}, ["highIcon"] = {7} }  -- defaults.
+-- lowIcon and highIcon are [1] = 8, [2] = 3  ( position = icon value )
+-- specificRollIcon is [roll] = icon value
 
 StripDice.raidIconValues = {  -- will be used later to allow control
 	["none"] = 0,
@@ -32,7 +34,9 @@ function StripDice.Print( msg, showName )
 	-- print to the chat frame
 	-- set showName to false to suppress the addon name printing
 	if (showName == nil) or (showName) then
-		msg = COLOR_NEON_BLUE.."StripDice> "..COLOR_END..msg
+		msg = string.format( "%s%s>%s %s",
+				COLOR_NEON_BLUE, STRIPDICE_SLUG, COLOR_END, msg )
+		--msg = COLOR_NEON_BLUE.."StripDice>"..COLOR_END..msg
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
@@ -42,7 +46,6 @@ function StripDice.LogMsg( msg, alsoPrint )
 	if( alsoPrint ) then StripDice.Print( msg ); end
 end
 function StripDice.OnLoad()
-	--StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
 	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
 	StripDiceFrame:RegisterEvent( "PLAYER_ENTERING_WORLD" )
 	StripDiceFrame:RegisterEvent( "VARIABLES_LOADED" )
@@ -52,19 +55,24 @@ function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
 	local expireTS = time() - 604800
 	local pruneCount = 0
-	for _, struct in ipairs( StripDice_log ) do
-		for ts, _ in pairs( struct ) do
-			if( ts < expireTS ) then
-				--StripDice.LogMsg( "Removing "..ts, true )
-				struct = nil
-				pruneCount = pruneCount + 1
+	local doPrune = true
+	while( doPrune ) do
+		if( StripDice_log and StripDice_log[1] ~= nil ) then    -- has to exist, and have something at index 1
+			for ts, _ in pairs( StripDice_log[1] ) do           -- look in the pairs, since we don't know the key value
+				if( ts < expireTS ) then                        -- if this is too old, remove it
+					table.remove( StripDice_log, 1 )
+					pruneCount = pruneCount + 1
+				else                                            -- all others will be too young to delete, stop
+					doPrune = false
+				end
 			end
+		else                                                    -- nothing exists to process
+			doPrune = false
 		end
 	end
 	if( pruneCount > 0 ) then
 		StripDice.LogMsg( "Pruned "..pruneCount.." log entries.", true )
 	end
-	--StripDice_log = {}
 end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
@@ -95,37 +103,104 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDice.gameActive = true
 	end
 end
+function StripDice.RemoveIconFromOtherSettings( iconValue, skipTableName )
+	-- take the iconValue to search for
+	-- skip the named table
+	local popTable = { ["lowIcon"] = true, ["highIcon"] = true }
+	for settingTable, struct in pairs( StripDice_options ) do
+		--StripDice.LogMsg( "Table: "..settingTable, true )
+		if( settingTable ~= skipTableName ) then
+			--StripDice.LogMsg( "Remove from table", true )
+			for i, val in pairs( struct ) do
+				--StripDice.LogMsg( "table: "..settingTable.." value: "..val.." =? "..iconValue.."  index: "..i, true )
+				if( val == iconValue ) then
+					--StripDice.LogMsg( "Matched value, remove it.", true )
+					if( popTable[settingTable] ) then
+						--StripDice.LogMsg( "Popping from table at pos: "..i, true )
+						table.remove( StripDice_options[settingTable], i )
+					else
+						--StripDice.LogMsg( "Setting index "..i.." to nil.", true )
+						StripDice_options[settingTable][i] = nil
+					end
+				end
+			end
+		end
+	end
+end
 StripDice.PLAYER_ENTERING_WORLD = StripDice.GROUP_ROSTER_UPDATE
 function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
 	msg = string.lower( msg )
-	if( string.find( msg, "set" ) ) then  -- set is the key word here
+	if( string.find( msg, "settings" ) ) then -- report the settings
+		StripDice.LogMsg( "Show settings", true )
+		local reportTables = {
+				{ ["t"] = "highIcon", ["str"] = "High" },
+				{ ["t"] = "lowIcon", ["str"] = "Low" }
+		}
+		local reportTable = {}
+		for _, struct in ipairs( reportTables ) do
+			--local reportStr = struct.str .. ":"
+			local count = 0
+			local iconList = {}
+			for _, iconNum in ipairs( StripDice_options[struct.t] or {} ) do
+				for iconName, num in pairs( StripDice.raidIconValues ) do
+					if( num == iconNum ) then
+						table.insert( iconList, "{"..iconName.."}" )
+					end
+				end
+			end
+			if( #iconList > 0 ) then
+				table.insert( reportTable, string.format( "%s: %s", struct.str, table.concat( iconList, ", " ) ) )
+			end
+		end
+		local iconList = {}
+		for val, iconNum in pairs( StripDice_options.specificRollIcon or {} ) do
+			for iconName, num in pairs( StripDice.raidIconValues ) do
+				if( num == iconNum ) then
+					table.insert( iconList, val.."-{"..iconName.."}" )
+				end
+			end
+		end
+		if( #iconList > 0 ) then
+			table.insert( reportTable, string.format( "Specific: %s", table.concat( iconList, ", " ) ) )
+		end
+
+		StripDice.LogMsg( table.concat( reportTable, ", " ) , true )
+	elseif( string.find( msg, "set" ) ) then  -- set is the key word here
 		--print( msg )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
 		if( hl ) then
 			local variableName = hl.."Icon"
-			--print( "msg: "..msg )
 			local index = 0
 			for testString in string.gmatch( msg, "%S+" ) do
-				--print( "testString: "..testString )
+				--StripDice.LogMsg( "testString: "..testString, true )
 				for iconName, iconValue in pairs( StripDice.raidIconValues ) do
 					if( string.match( testString, iconName ) ) then
 						if( index == 0 ) then StripDice_options[variableName] = {}; end
 						index = index + 1
 						StripDice_options[variableName][index] = ( iconValue > 0 and iconValue or nil )
-						-- search for this icon elsewhere and clear it.
-						for setting, settingTable in pairs( StripDice_options ) do
-							for i, val in pairs( settingTable ) do
-								--print( "value: "..val.." =? "..iconValue.."  index: "..i.." =? "..index.."  setting: "..setting.." =? "..variableName )
-								if( val == iconValue and ( i ~= index or setting ~= variableName ) ) then
-									--print( "setting "..setting.."["..i.."] to nil" )
-									StripDice_options[setting][i] = nil
-								end
+						StripDice.RemoveIconFromOtherSettings( iconValue, variableName )
+					end
+				end
+			end
+		else  -- until the above is refactored to include this setting
+			local value = tonumber( string.match( msg, "(%d+)" ) )
+			if( value ) then
+				--print( "value: "..value )
+				for testString in string.gmatch( msg, "%S+" ) do
+					for iconName, iconValue in pairs( StripDice.raidIconValues ) do
+						if( string.match( testString, iconName ) ) then
+							--StripDice.LogMsg( "Found "..iconName.." in msg", true )
+							if( not StripDice_options.specificRollIcon ) then
+								StripDice_options.specificRollIcon = {}
 							end
+							StripDice_options.specificRollIcon[value] = ( iconValue > 0 and iconValue or nil )
+							StripDice.RemoveIconFromOtherSettings( iconValue, "specificRollIcon" )
 						end
 					end
 				end
 			end
+
 		end
 	elseif( string.find( msg, "roll" ) ) then  -- roll starts a roll
 		--StripDice.Print( "msg:"..msg )
@@ -256,6 +331,15 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 				--print( "Max: Put "..StripDice_options.highIcon[i].." on "..name )
 				SetRaidTarget( name, ( StripDice_options.highIcon[i] or 0 ) )
 			end
+			--print( "Find Specific" )
+			StripDice.specificWho = {}
+			for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
+				if( StripDice_options.specificRollIcon and StripDice_options.specificRollIcon[roll] ) then
+					StripDice.LogMsg( "Specific: Put "..StripDice_options.specificRollIcon[roll].." on "..name )
+					table.insert( StripDice.specificWho, name )
+					SetRaidTarget( name, ( StripDice_options.specificRollIcon[roll] or 0 ) )
+				end
+			end
 		end
 	end
 end
@@ -276,4 +360,12 @@ function StripDice.StopGame()
 	end
 	StripDice.max = nil
 	StripDice.maxWho = nil
+	-- specificWho
+	if( StripDice.specificWho ) then
+		for _,name in pairs( StripDice.specificWho ) do
+			SetRaidTarget( name, 0 )
+		end
+	end
+	StripDice.specificWho = nil
 end
+
