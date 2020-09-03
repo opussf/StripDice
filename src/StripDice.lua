@@ -322,6 +322,15 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 				--print( "Max: Put "..StripDice_options.highIcon[i].." on "..name )
 				SetRaidTarget( name, ( StripDice_options.highIcon[i] or 0 ) )
 			end
+			--print( "Find Specific" )
+			StripDice.specificWho = {}
+			for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
+				if( StripDice_options.specificRollIcon[roll] ) then
+					StripDice.LogMsg( "Specific: Put "..StripDice_options.specificRollIcon[roll].." on "..name )
+					table.insert( StripDice.specificWho, name )
+					SetRaidTarget( name, ( StripDice_options.specificRollIcon[roll] or 0 ) )
+				end
+			end
 		end
 	end
 end
@@ -342,5 +351,12 @@ function StripDice.StopGame()
 	end
 	StripDice.max = nil
 	StripDice.maxWho = nil
+	-- specificWho
+	if( StripDice.specificWho ) then
+		for _,name in pairs( StripDice.specificWho ) do
+			SetRaidTarget( name, 0 )
+		end
+	end
+	StripDice.specificWho = nil
 end
 

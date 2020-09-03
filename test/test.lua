@@ -510,6 +510,21 @@ function test.test_CHAT_MSG_SYSTEM_setHasNoGoodSettings()
 end
 
 -----------------------------------------
+-- Tests for rolling a specific Number
+function test.test_CHAT_MSG_SYSTEM_rollSpecificNum_noMax_noMin()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set high none" )
+	StripDice.CHAT_MSG_SAY( {}, "set low none" )
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	StripDice.CHAT_MSG_SAY( {}, "roll" )
+	StripDice.CHAT_MSG_SYSTEM( {}, "Bob rolls 69 (1-100)" )
+	assertEquals( "Bob", StripDice.specificWho[1] )
+end
+
+
+
+-----------------------------------------
 -- Tests for settings report
 function test.test_CHAT_MSG_SYSTEM_report()
 	StripDice.PLAYER_ENTERING_WORLD()
