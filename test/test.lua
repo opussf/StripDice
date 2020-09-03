@@ -522,8 +522,6 @@ function test.test_CHAT_MSG_SYSTEM_rollSpecificNum_noMax_noMin()
 	assertEquals( "Bob", StripDice.specificWho[1] )
 end
 
-
-
 -----------------------------------------
 -- Tests for settings report
 function test.test_CHAT_MSG_SYSTEM_report()
@@ -536,6 +534,27 @@ function test.test_CHAT_MSG_SYSTEM_report_list()
 	StripDice.CHAT_MSG_SAY( {}, "set low star skull" )
 	StripDice.CHAT_MSG_SAY( {}, "settings" )
 	assertEquals( "High: {cross}, Low: {star}, {skull}", StripDice_log[#StripDice_log][time()] )
+end
+function test.test_CHAT_MSG_SYSTEM_report_settingsOnUpdate()
+	-- test to see if an updated system handles settings command
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice_options.specificRollIcon = nil
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}", StripDice_log[#StripDice_log][time()] )
+end
+function test.test_CHAT_MSG_SYSTEM_report_settingsWithSpecific()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}, Specific: 69-{circle}", StripDice_log[#StripDice_log][time()] )
+end
+function test.test_CHAT_MSG_SYSTEM_report_settingsWithMultipleSpecific()
+	-- this may be unstable....
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "set 69 circle" )
+	StripDice.CHAT_MSG_SAY( {}, "set 42 diamond" )
+	StripDice.CHAT_MSG_SAY( {}, "settings" )
+	assertEquals( "High: {cross}, Low: {star}, Specific: 42-{diamond}, 69-{circle}", StripDice_log[#StripDice_log][time()] )
 end
 
 test.run()

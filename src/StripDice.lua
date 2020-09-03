@@ -135,20 +135,17 @@ function StripDice.CHAT_MSG_SAY( ... )
 		StripDice.LogMsg( "Show settings", true )
 		local reportTables = {
 				{ ["t"] = "highIcon", ["str"] = "High" },
-				{ ["t"] = "lowIcon", ["str"] = "Low" },
-				{ ["t"] = "specificRollIcon", ["str"] = "Specific" }
+				{ ["t"] = "lowIcon", ["str"] = "Low" }
 		}
 		local reportTable = {}
 		for _, struct in ipairs( reportTables ) do
 			--local reportStr = struct.str .. ":"
 			local count = 0
 			local iconList = {}
-			for _, iconNum in ipairs( StripDice_options[struct.t] ) do
+			for _, iconNum in ipairs( StripDice_options[struct.t] or {} ) do
 				for iconName, num in pairs( StripDice.raidIconValues ) do
 					if( num == iconNum ) then
 						table.insert( iconList, "{"..iconName.."}" )
-
-			--			reportStr = string.format( "%s {%s}", reportStr, iconName )  ---    !!!!  @TODO  rewrite this....
 					end
 				end
 			end
@@ -156,6 +153,18 @@ function StripDice.CHAT_MSG_SAY( ... )
 				table.insert( reportTable, string.format( "%s: %s", struct.str, table.concat( iconList, ", " ) ) )
 			end
 		end
+		local iconList = {}
+		for val, iconNum in pairs( StripDice_options.specificRollIcon or {} ) do
+			for iconName, num in pairs( StripDice.raidIconValues ) do
+				if( num == iconNum ) then
+					table.insert( iconList, val.."-{"..iconName.."}" )
+				end
+			end
+		end
+		if( #iconList > 0 ) then
+			table.insert( reportTable, string.format( "Specific: %s", table.concat( iconList, ", " ) ) )
+		end
+
 		StripDice.LogMsg( table.concat( reportTable, ", " ) , true )
 	elseif( string.find( msg, "set" ) ) then  -- set is the key word here
 		--print( msg )
