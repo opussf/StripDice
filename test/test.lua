@@ -36,6 +36,10 @@ function test.test_OnLoad_Register_PLAYER_ENTERING_WORLD()
 	StripDice.OnLoad()
 	assertTrue( StripDiceFrame.Events.PLAYER_ENTERING_WORLD )
 end
+function test.test_OnLoad_Register_VARIABLES_LOADED()
+	StripDice.OnLoad()
+	assertTrue( StripDiceFrame.Events.VARIABLES_LOADED )
+end
 function test.test_GROUP_ROSTER_UPDATE_InParty_CHAT_MSG_SYSTEM()
 	-- GROUP_ROSTER_UPDATE registers events in party
 	myParty = { ["group"] = 2, ["roster"] = { "Zed" } }
@@ -128,6 +132,8 @@ function test.test_GROUP_ROSTER_UPDATE_LeavePartyStopsGame()
 	assertIsNil( StripDice.minWho, "minWho should be nil" )
 	assertIsNil( StripDice.max, "max should be nil" )
 	assertIsNil( StripDice.maxWho, "maxWho should be nil" )
+	assertIsNil( StripDice.specificWho, "specificWho should be nil" )
+	assertIsNil( StripDice.gameActive, "gameActive should be nil" )
 end
 function test.test_StopGame_clearsCurrentGame()
 	StripDice.currentGame = time()
@@ -139,6 +145,7 @@ function test.test_StopGame_clearsCurrentGame()
 	assertIsNil( StripDice.minWho, "minWho should be nil" )
 	assertIsNil( StripDice.max, "max should be nil" )
 	assertIsNil( StripDice.maxWho, "maxWho should be nil" )
+	assertIsNil( StripDice.specificWho, "specificWho should be nil" )
 end
 function test.test_StartGame_InParty_CHAT_MSG_SAY()
 	-- this should not
@@ -236,6 +243,12 @@ function test.test_SetLowIcon_moon_CHAT_MSG_SAY()
 	--test.setDefaultIcons()
 	StripDice.PLAYER_ENTERING_WORLD()
 	StripDice.CHAT_MSG_SAY( {}, "set low roll to moon" )
+	assertEquals( 5, StripDice_options.lowIcon[1] )
+end
+function test.test_SetLowIcon_moon_CHAT_MSG_SAY_inCaps()
+	--test.setDefaultIcons()
+	StripDice.PLAYER_ENTERING_WORLD()
+	StripDice.CHAT_MSG_SAY( {}, "SET LOW ROLL TO MOON" )
 	assertEquals( 5, StripDice_options.lowIcon[1] )
 end
 function test.test_SetLowIcon_diamond_CHAT_MSG_SAY()
