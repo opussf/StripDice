@@ -139,7 +139,6 @@ function StripDice.CHAT_MSG_SAY( ... )
 		}
 		local reportTable = {}
 		for _, struct in ipairs( reportTables ) do
-			--local reportStr = struct.str .. ":"
 			local count = 0
 			local iconList = {}
 			for _, iconNum in ipairs( StripDice_options[struct.t] or {} ) do
@@ -200,10 +199,9 @@ function StripDice.CHAT_MSG_SAY( ... )
 					end
 				end
 			end
-
 		end
 	elseif( string.find( msg, "roll" ) ) then  -- roll starts a roll
-		--StripDice.Print( "msg:"..msg )
+		--StripDice.LogMsg( "msg:"..msg, true )
 		StripDice.StopGame()
 		StripDice.currentGame = time()
 		StripDice_games[ StripDice.currentGame ] = {}
@@ -346,14 +344,14 @@ end
 function StripDice.StopGame()
 	-- @TODO  'fix this too'
 	StripDice.currentGame = nil
-	if( StripDice.minWho ) then
+	if( StripDice.minWho ) then  -- Remove the icons
 		for _,name in pairs( StripDice.minWho ) do
 			SetRaidTarget( name, 0 )
 		end
 	end
 	StripDice.min = nil
 	StripDice.minWho = nil
-	if( StripDice.maxWho ) then
+	if( StripDice.maxWho ) then  -- Remove the icons
 		for _,name in pairs( StripDice.maxWho ) do
 			SetRaidTarget( name, 0 )
 		end
