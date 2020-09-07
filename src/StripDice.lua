@@ -77,7 +77,9 @@ end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
 	if( NumGroupMembers == 0 ) then  -- turn off listening
-		StripDice.LogMsg( "Deactivating Dice game.", true )
+		if( StripDice.gameActive ) then
+			StripDice.LogMsg( "Deactivating Dice game.", true )
+		end
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY" )
