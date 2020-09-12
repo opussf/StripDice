@@ -53,6 +53,7 @@ function StripDice.OnLoad()
 end
 function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
+	StripDice.LogMsg( "v"..STRIPDICE_MSG_VERSION.." loaded." )
 	local expireTS = time() - 604800
 	local pruneCount = 0
 	local minPrune = time()
