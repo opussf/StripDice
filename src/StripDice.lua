@@ -53,13 +53,18 @@ function StripDice.OnLoad()
 end
 function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
+	StripDice.LogMsg( "v"..STRIPDICE_MSG_VERSION.." loaded." )
 	local expireTS = time() - 604800
 	local pruneCount = 0
+	local minPrune = time()
+	local maxPrune = 0
 	local doPrune = true
 	while( doPrune ) do
 		if( StripDice_log and StripDice_log[1] ~= nil ) then    -- has to exist, and have something at index 1
 			for ts, _ in pairs( StripDice_log[1] ) do           -- look in the pairs, since we don't know the key value
 				if( ts < expireTS ) then                        -- if this is too old, remove it
+					maxPrune = math.max( maxPrune, ts )
+					minPrune = math.min( minPrune, ts )
 					table.remove( StripDice_log, 1 )
 					pruneCount = pruneCount + 1
 				else                                            -- all others will be too young to delete, stop
@@ -71,13 +76,16 @@ function StripDice.VARIABLES_LOADED()
 		end
 	end
 	if( pruneCount > 0 ) then
-		StripDice.LogMsg( "Pruned "..pruneCount.." log entries.", true )
+		StripDice.LogMsg( "Pruned "..pruneCount.." log entries, from "..
+			date( "%c", minPrune ).." to "..date( "%c", maxPrune )..".", true )
 	end
 end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
 	if( NumGroupMembers == 0 ) then  -- turn off listening
-		StripDice.LogMsg( "Deactivating Dice game.", true )
+		if( StripDice.gameActive ) then
+			StripDice.LogMsg( "Deactivating Dice game.", true )
+		end
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY" )
@@ -322,11 +330,11 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
 			end
 			for i,name in ipairs( StripDice.minWho ) do
-				--print( "Min: Put "..StripDice_options.lowIcon[i].." on "..name )
+				StripDice.LogMsg( "Min: Put "..StripDice_options.lowIcon[i].." on "..name )
 				SetRaidTarget( name, ( StripDice_options.lowIcon[i] or 0 ) )
 			end
 			for i,name in ipairs( StripDice.maxWho ) do
-				--print( "Max: Put "..StripDice_options.highIcon[i].." on "..name )
+				StripDice.LogMsg( "Max: Put "..StripDice_options.highIcon[i].." on "..name )
 				SetRaidTarget( name, ( StripDice_options.highIcon[i] or 0 ) )
 			end
 			--print( "Find Specific" )
