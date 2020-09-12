@@ -92,6 +92,7 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_PARTY_LEADER" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_RAID" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_RAID_LEADER" )
+		StripDiceFrame:UnregisterEvent( "CHAT_MSG_RAID_WARNING" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_YELL" )
@@ -105,6 +106,7 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_PARTY_LEADER" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_RAID" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_RAID_LEADER" )
+		StripDiceFrame:RegisterEvent( "CHAT_MSG_RAID_WARNING" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_CHAT" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_INSTANCE_CHAT_LEADER" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_YELL" )
@@ -234,6 +236,7 @@ StripDice.CHAT_MSG_PARTY = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_PARTY_LEADER = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_RAID = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_RAID_LEADER = StripDice.CHAT_MSG_SAY
+StripDice.CHAT_MSG_RAID_WARNING = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_INSTANCE_CHAT = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_INSTANCE_CHAT_LEADER = StripDice.CHAT_MSG_SAY
 StripDice.CHAT_MSG_YELL = StripDice.CHAT_MSG_SAY
