@@ -142,44 +142,49 @@ function StripDice.RemoveIconFromOtherSettings( iconValue, skipTableName )
 		end
 	end
 end
+function StripDice.ReportSettings()
+	StripDice.LogMsg( "Show settings", 4 )  -- Info
+	local reportTables = {
+			{ ["t"] = "highIcon", ["str"] = "High" },
+			{ ["t"] = "lowIcon", ["str"] = "Low" }
+	}
+	local reportTable = {}
+	for _, struct in ipairs( reportTables ) do
+		local count = 0
+		local iconList = {}
+		for _, iconNum in ipairs( StripDice_options[struct.t] or {} ) do
+			for iconName, num in pairs( StripDice.raidIconValues ) do
+				if( num == iconNum ) then
+					table.insert( iconList, "{"..iconName.."}" )
+				end
+			end
+		end
+		if( #iconList > 0 ) then
+			table.insert( reportTable, string.format( "%s: %s", struct.str, table.concat( iconList, ", " ) ) )
+		end
+	end
+	local iconList = {}
+	for val, iconNum in pairs( StripDice_options.specificRollIcon or {} ) do
+		for iconName, num in pairs( StripDice.raidIconValues ) do
+			if( num == iconNum ) then
+				table.insert( iconList, val.."-{"..iconName.."}" )
+			end
+		end
+	end
+	if( #iconList > 0 ) then
+		table.insert( reportTable, string.format( "Specific: %s", table.concat( iconList, ", " ) ) )
+	end
+
+	if( #reportTable > 0 ) then
+		StripDice.LogMsg( table.concat( reportTable, ", " ) ) -- nil = always
+	end
+end
 StripDice.PLAYER_ENTERING_WORLD = StripDice.GROUP_ROSTER_UPDATE
 function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
 	msg = string.lower( msg )
 	if( string.find( msg, "settings" ) ) then -- report the settings
-		StripDice.LogMsg( "Show settings", 4 )  -- Info
-		local reportTables = {
-				{ ["t"] = "highIcon", ["str"] = "High" },
-				{ ["t"] = "lowIcon", ["str"] = "Low" }
-		}
-		local reportTable = {}
-		for _, struct in ipairs( reportTables ) do
-			local count = 0
-			local iconList = {}
-			for _, iconNum in ipairs( StripDice_options[struct.t] or {} ) do
-				for iconName, num in pairs( StripDice.raidIconValues ) do
-					if( num == iconNum ) then
-						table.insert( iconList, "{"..iconName.."}" )
-					end
-				end
-			end
-			if( #iconList > 0 ) then
-				table.insert( reportTable, string.format( "%s: %s", struct.str, table.concat( iconList, ", " ) ) )
-			end
-		end
-		local iconList = {}
-		for val, iconNum in pairs( StripDice_options.specificRollIcon or {} ) do
-			for iconName, num in pairs( StripDice.raidIconValues ) do
-				if( num == iconNum ) then
-					table.insert( iconList, val.."-{"..iconName.."}" )
-				end
-			end
-		end
-		if( #iconList > 0 ) then
-			table.insert( reportTable, string.format( "Specific: %s", table.concat( iconList, ", " ) ) )
-		end
-
-		StripDice.LogMsg( table.concat( reportTable, ", " ) ) -- nil = always
+		StripDice.ReportSettings()
 	elseif( string.find( msg, "set" ) ) then  -- set is the key word here
 		--print( msg )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
@@ -215,6 +220,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 				end
 			end
 		end
+		StripDice.ReportSettings()
 	elseif( string.find( msg, "roll" ) ) then  -- roll starts a roll
 		--StripDice.LogMsg( "msg:"..msg, true )
 		StripDice.StopGame()
