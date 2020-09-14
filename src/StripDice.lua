@@ -249,7 +249,7 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 		roll = tonumber( roll )
 		low = tonumber( low )
 		high = tonumber( high )
-		--StripDice.Print( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
+		StripDice.LogMsg( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
 		if( StripDice.currentGame and StripDice.currentGame + 60 >= time() ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
 				DoEmote( "No", who )
