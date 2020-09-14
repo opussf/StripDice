@@ -1,5 +1,9 @@
 # Features
 
+## settings report
+
+Report the settings when ever the settings are changed.
+
 ## debug levels
 
 Change the LogMsg() function to also take a log level.
