@@ -40,10 +40,15 @@ function StripDice.Print( msg, showName )
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
-function StripDice.LogMsg( msg, alsoPrint )
-	-- alsoPrint, if set to true, prints to console
-	table.insert( StripDice_log, { [time()] = msg } )
-	if( alsoPrint ) then StripDice.Print( msg ); end
+function StripDice.LogMsg( msg, debugLevel, alsoPrint )
+	-- debugLevel  (Always - nil), (Critical - 1), (Error - 2), (Warning - 3), (Info - 4)
+	if( debugLevel == nil ) or
+			( ( debugLevel and StripDice_options.debugLevel ) and StripDice_options.debugLevel >= debugLevel ) then
+		table.insert( StripDice_log, { [time()] = (debugLevel and debugLevel..": " or "" )..msg } )
+		StripDice.Print( msg )
+	end
+	--table.insert( StripDice_log, { [time()] = msg } )
+	--if( alsoPrint ) then StripDice.Print( msg ); end
 end
 function StripDice.OnLoad()
 	StripDiceFrame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
@@ -77,14 +82,14 @@ function StripDice.VARIABLES_LOADED()
 	end
 	if( pruneCount > 0 ) then
 		StripDice.LogMsg( "Pruned "..pruneCount.." log entries, from "..
-			date( "%c", minPrune ).." to "..date( "%c", maxPrune )..".", true )
+			date( "%c", minPrune ).." to "..date( "%c", maxPrune ).."." )  -- set to (info - 4)?
 	end
 end
 function StripDice.GROUP_ROSTER_UPDATE()
 	local NumGroupMembers = GetNumGroupMembers()
 	if( NumGroupMembers == 0 ) then  -- turn off listening
 		if( StripDice.gameActive ) then
-			StripDice.LogMsg( "Deactivating Dice game.", true )
+			StripDice.LogMsg( "Deactivating Dice game.", 4 )
 		end
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:UnregisterEvent( "CHAT_MSG_SAY" )
@@ -99,7 +104,7 @@ function StripDice.GROUP_ROSTER_UPDATE()
 		StripDice.StopGame()
 		StripDice.gameActive = nil
 	elseif( NumGroupMembers > 0 and not StripDice.gameActive ) then
-		StripDice.LogMsg( "Dice game is active with "..NumGroupMembers.." in the group.", true )
+		StripDice.LogMsg( "Dice game is active with "..NumGroupMembers.." in the group.", 4 )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SYSTEM" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_SAY" )
 		StripDiceFrame:RegisterEvent( "CHAT_MSG_PARTY" )
@@ -142,7 +147,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 	_, msg, language, _, _, other = ...
 	msg = string.lower( msg )
 	if( string.find( msg, "settings" ) ) then -- report the settings
-		StripDice.LogMsg( "Show settings", true )
+		StripDice.LogMsg( "Show settings", 4 )  -- Info
 		local reportTables = {
 				{ ["t"] = "highIcon", ["str"] = "High" },
 				{ ["t"] = "lowIcon", ["str"] = "Low" }
@@ -174,7 +179,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 			table.insert( reportTable, string.format( "Specific: %s", table.concat( iconList, ", " ) ) )
 		end
 
-		StripDice.LogMsg( table.concat( reportTable, ", " ) , true )
+		StripDice.LogMsg( table.concat( reportTable, ", " ) ) -- nil = always
 	elseif( string.find( msg, "set" ) ) then  -- set is the key word here
 		--print( msg )
 		local hl = string.match( msg, "(low)" ) or string.match( msg, "(high)" )
@@ -249,11 +254,11 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 		roll = tonumber( roll )
 		low = tonumber( low )
 		high = tonumber( high )
-		StripDice.LogMsg( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")" )
+		StripDice.LogMsg( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")", 4 ) -- info
 		if( StripDice.currentGame and StripDice.currentGame + 60 >= time() ) then
 			if( StripDice_games[StripDice.currentGame][who] ) then
 				DoEmote( "No", who )
-				StripDice.LogMsg( who.." has already rolled.", true )
+				StripDice.LogMsg( who.." has already rolled." )
 			else
 				StripDice_games[StripDice.currentGame][who] = roll
 			end
@@ -301,8 +306,8 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 			numHigh = math.min( numHigh, #StripDice_options.highIcon )
 			numLow = math.min( numLow, #StripDice_options.lowIcon )
 
-			StripDice.LogMsg( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
-			StripDice.LogMsg( "high icon count: "..#StripDice_options.highIcon.."   low icon count: "..#StripDice_options.lowIcon )
+			StripDice.LogMsg( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")", 4 )
+			StripDice.LogMsg( "high icon count: "..#StripDice_options.highIcon.."   low icon count: "..#StripDice_options.lowIcon, 4 )
 
 			-- find who has the top n rolls
 			--print( "Find Max" )
@@ -333,18 +338,18 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
 			end
 			for i,name in ipairs( StripDice.minWho ) do
-				StripDice.LogMsg( "Min: Put "..StripDice_options.lowIcon[i].." on "..name )
+				StripDice.LogMsg( "Min: Put "..StripDice_options.lowIcon[i].." on "..name, 4 )
 				SetRaidTarget( name, ( StripDice_options.lowIcon[i] or 0 ) )
 			end
 			for i,name in ipairs( StripDice.maxWho ) do
-				StripDice.LogMsg( "Max: Put "..StripDice_options.highIcon[i].." on "..name )
+				StripDice.LogMsg( "Max: Put "..StripDice_options.highIcon[i].." on "..name, 4 )
 				SetRaidTarget( name, ( StripDice_options.highIcon[i] or 0 ) )
 			end
 			--print( "Find Specific" )
 			StripDice.specificWho = {}
 			for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
 				if( StripDice_options.specificRollIcon and StripDice_options.specificRollIcon[roll] ) then
-					StripDice.LogMsg( "Specific: Put "..StripDice_options.specificRollIcon[roll].." on "..name )
+					StripDice.LogMsg( "Specific: Put "..StripDice_options.specificRollIcon[roll].." on "..name, 4 )
 					table.insert( StripDice.specificWho, name )
 					SetRaidTarget( name, ( StripDice_options.specificRollIcon[roll] or 0 ) )
 				end
