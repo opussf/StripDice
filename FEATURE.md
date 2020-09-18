@@ -1,5 +1,25 @@
 # Features
 
+## settings report
+
+Report the settings when ever the settings are changed.
+
+## debug levels
+
+Change the LogMsg() function to also take a log level.
+Many systems use:
+
+* Critical    (nil)
+* Error       (1)
+* Warning     (2)
+* Info        (3)
+
+A setting of Info also gets all the above.
+A setting of Critical only gets the Critical messages.
+
+Setting debug increases the value, increasing the log messages recorded.
+
+
 ## expanded Commands
 
 Commands:
