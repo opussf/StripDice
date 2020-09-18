@@ -226,7 +226,7 @@ function StripDice.CHAT_MSG_SAY( ... )
 		StripDice.StopGame()
 		StripDice.currentGame = time()
 		StripDice_games[ StripDice.currentGame ] = {}
-		StripDice.LogMsg( "A roll has been started.  Game: "..StripDice.currentGame, true )
+		StripDice.LogMsg( "A roll has been started.  Game: "..StripDice.currentGame )
 
 		local pruneCount = 0
 		for gameTS in pairs( StripDice_games ) do
@@ -236,10 +236,10 @@ function StripDice.CHAT_MSG_SAY( ... )
 			end
 		end
 		if( pruneCount > 0 ) then
-			StripDice.LogMsg( "Pruned "..pruneCount.." old games.", true )
+			StripDice.LogMsg( "Pruned "..pruneCount.." old games.", 4 )
 		end
 	elseif( StripDice.currentGame and StripDice.currentGame + 60 < time() ) then  -- game is started, and older than 1 minute
-		StripDice.LogMsg( "Game timed out", true)
+		StripDice.LogMsg( "Game timed out" )
 		StripDice.StopGame()
 	end
 end
