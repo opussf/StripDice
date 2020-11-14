@@ -29,7 +29,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Build with ant
-        run: ant package; ls ./; ls ./target/
+        run: ant package; ls ./target/*.zip*
 
       - name: Create Release
         id: create_release
@@ -40,12 +40,12 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body_path: target/working/changelog.txt
-          draft: true
+          draft: false
           prerelease: false
 
       - name: Upload release binaries
-        uses: alexellis/upload-assets@0.2.2
+        uses: alexellis/upload-assets@0.2.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          asset_paths: '["./target/*.zip*"]'
+          asset_paths: '["./target/StripDice*"]'
