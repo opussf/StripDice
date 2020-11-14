@@ -44,8 +44,8 @@ jobs:
           prerelease: false
 
       - name: Upload release binaries
-        uses: alexellis/upload-assets@0.2.3
+        uses: alexellis/upload-assets@0.2.2
         env:
-          GITHUB_TOKEN: ${{ github.token }} # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
           asset_paths: '["./target/*.zip*"]'
