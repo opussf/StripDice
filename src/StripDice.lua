@@ -344,7 +344,11 @@ function StripDice.CHAT_MSG_SYSTEM( ... )
 				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
 			end
 			for i,name in ipairs( StripDice.minWho ) do
-				StripDice.LogMsg( "Min: Put "..StripDice_options.lowIcon[i].." on "..name, 4 )
+				if( not name or not StripDice_options.lowIcon[i] ) then
+					StripDice.LogMsg( "Icon: "..(StripDice_options.lowIcon[i] or "nil" ) )
+					StripDice.LogMsg( "Name: "..(name or "nil" ) )
+				end
+				StripDice.LogMsg( "Min: Put "..(StripDice_options.lowIcon[i] or "nil?").." on "..( name or "nil?"), 4 )
 				SetRaidTarget( name, ( StripDice_options.lowIcon[i] or 0 ) )
 			end
 			for i,name in ipairs( StripDice.maxWho ) do
