@@ -1,5 +1,5 @@
+## Title: Dice Game v@VERSION@
 ## Interface: @INTERFACE@
-## Title: Dice Game
 ## Notes: Who rolled high, who rolled low?  @VERSION@
 ## Author: opussf
 ## Version: @VERSION@
