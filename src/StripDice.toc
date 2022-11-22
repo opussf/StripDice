@@ -1,6 +1,6 @@
-## Title: Dice Game v@VERSION@
+## Title: Dice Game
 ## Interface: @INTERFACE@
-## Notes: Who rolled high, who rolled low?  @VERSION@
+## Notes: Who rolled high, who rolled low? (@VERSION@)
 ## Author: opussf
 ## Version: @VERSION@
 ## Description: Places a raid icon on both the high roller, and the low roller in a game of dice.
