@@ -4,8 +4,8 @@ STRIPDICE_MSG_ADDONNAME = GetAddOnMetadata( STRIPDICE_SLUG, "Title" )
 STRIPDICE_MSG_AUTHOR = GetAddOnMetadata( STRIPDICE_SLUG, "Author" )
 
 -- Colours
-COLOR_NEON_BLUE = "|cff4d4dff";
-COLOR_END = "|r";
+COLOR_NEON_BLUE = "|cff4d4dff"
+COLOR_END = "|r"
 
 -- StripDice = {}
 StripDice_games = {}
@@ -36,7 +36,6 @@ function StripDice.Print( msg, showName )
 	if (showName == nil) or (showName) then
 		msg = string.format( "%s%s>%s %s",
 				COLOR_NEON_BLUE, STRIPDICE_SLUG, COLOR_END, msg )
-		--msg = COLOR_NEON_BLUE.."StripDice>"..COLOR_END..msg
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
@@ -58,7 +57,7 @@ function StripDice.OnLoad()
 end
 function StripDice.VARIABLES_LOADED()
 	StripDiceFrame:UnregisterEvent( "VARIABLES_LOADED" )
-	StripDice.LogMsg( "v"..STRIPDICE_MSG_VERSION.." loaded." )
+	--StripDice.LogMsg( "v"..STRIPDICE_MSG_VERSION.." loaded." )
 	local expireTS = time() - 604800
 	local pruneCount = 0
 	local minPrune = time()

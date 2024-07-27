@@ -450,13 +450,13 @@ function test.test_LogMsg_Prune_01()
 	StripDice_log = { { [1] = "This is very old" }, { [time()-5000000] = "This is old too" } }
 	StripDice.VARIABLES_LOADED()
 	--test.printLog()
-	assertEquals( 2, #StripDice_log )
+	assertEquals( 1, #StripDice_log )
 end
 function test.test_LogMsg_Prune_02()
 	StripDice_log = { { [1] = "This is very old" }, { [time()-5000000] = "This is old too" }, { [time()] = "This is now" } }
 	StripDice.VARIABLES_LOADED()
 	--test.printLog()
-	assertEquals( 3, #StripDice_log )
+	assertEquals( 2, #StripDice_log )
 end
 
 -----------------------------------------
