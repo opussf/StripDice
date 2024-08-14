@@ -1,8 +1,8 @@
 -- STRIPDICE @VERSION@
 STRIPDICE_SLUG, StripDice = ...
-STRIPDICE_MSG_VERSION     = C_AddOn.GetAddOnMetadata( STRIPDICE_SLUG, "Version" )
-STRIPDICE_MSG_ADDONNAME   = C_AddOn.GetAddOnMetadata( STRIPDICE_SLUG, "Title" )
-STRIPDICE_MSG_AUTHOR      = C_AddOn.GetAddOnMetadata( STRIPDICE_SLUG, "Author" )
+STRIPDICE_MSG_VERSION     = C_AddOns.GetAddOnMetadata( STRIPDICE_SLUG, "Version" )
+STRIPDICE_MSG_ADDONNAME   = C_AddOns.GetAddOnMetadata( STRIPDICE_SLUG, "Title" )
+STRIPDICE_MSG_AUTHOR      = C_AddOns.GetAddOnMetadata( STRIPDICE_SLUG, "Author" )
 
 -- Colours
 COLOR_NEON_BLUE = "|cff4d4dff"
