@@ -254,114 +254,116 @@ StripDice.CHAT_MSG_YELL = StripDice.CHAT_MSG_SAY
 
 function StripDice.CHAT_MSG_SYSTEM( ... )
 	_, roll = ...
-	--StripDice.Print( roll )
-	local found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
-	if( found ) then
-		roll = tonumber( roll )
-		low = tonumber( low )
-		high = tonumber( high )
-		StripDice.LogMsg( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")", 4 ) -- info
-		if( StripDice.currentGame and StripDice.currentGame + 60 >= time() ) then
-			if( StripDice_games[StripDice.currentGame][who] ) then
-				DoEmote( "No", who )
-				StripDice.LogMsg( who.." has already rolled." )
-			else
-				StripDice_games[StripDice.currentGame][who] = roll
-			end
-			-- build sorted rolls table
-			local rolls = {}
-			for _,rolled in pairs( StripDice_games[StripDice.currentGame] ) do
-				table.insert( rolls, rolled )
-			end
-			table.sort( rolls )
-
-			-- build min and max from rolls
-			StripDice.min = {}
-			StripDice.max = {}
-			local numRolls = #rolls
-			for i = 1, numRolls do
-				--print( i..": "..rolls[i] )
-				table.insert( StripDice.min, rolls[i] )
-				table.insert( StripDice.max, rolls[numRolls - (i-1)] )
-			end
-
-			local numHigh = #StripDice_options.highIcon
-			local numLow = #StripDice_options.lowIcon
-
-			--print( "I have "..#rolls.." rolls." )
-			--print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
-
-			-- find how many of what I need.
-			while( #rolls < ( numHigh + numLow ) ) do
-				if( numHigh > numLow ) then
-					--print( "High - 1" )
-					numHigh = numHigh - 1
-				elseif( numLow > numHigh ) then
-					numLow = numLow - 1
-					--print( "Low - 1" )
+	if not issecretvalue( roll ) then
+		--StripDice.Print( roll )
+		local found, _, who, roll, low, high = string.find( roll, "(.+) rolls (%d+) %((%d+)%-(%d+)%)")
+		if( found ) then
+			roll = tonumber( roll )
+			low = tonumber( low )
+			high = tonumber( high )
+			StripDice.LogMsg( who.." rolled a "..roll.." in the range of ("..low.." - "..high..")", 4 ) -- info
+			if( StripDice.currentGame and StripDice.currentGame + 60 >= time() ) then
+				if( StripDice_games[StripDice.currentGame][who] ) then
+					DoEmote( "No", who )
+					StripDice.LogMsg( who.." has already rolled." )
 				else
-					--print( "Both - 1" )
-					numLow = numLow - 1
-					numHigh = numHigh - 1
+					StripDice_games[StripDice.currentGame][who] = roll
 				end
-			end
-			-- reset to at least 1
-			if( numHigh == 0 and #StripDice_options.highIcon >= 1 ) then numHigh = 1; end
-			if( numLow  == 0 and #StripDice_options.lowIcon >= 1 ) then numLow  = 1; end
+				-- build sorted rolls table
+				local rolls = {}
+				for _,rolled in pairs( StripDice_games[StripDice.currentGame] ) do
+					table.insert( rolls, rolled )
+				end
+				table.sort( rolls )
 
-			numHigh = math.min( numHigh, #StripDice_options.highIcon )
-			numLow = math.min( numLow, #StripDice_options.lowIcon )
+				-- build min and max from rolls
+				StripDice.min = {}
+				StripDice.max = {}
+				local numRolls = #rolls
+				for i = 1, numRolls do
+					--print( i..": "..rolls[i] )
+					table.insert( StripDice.min, rolls[i] )
+					table.insert( StripDice.max, rolls[numRolls - (i-1)] )
+				end
 
-			StripDice.LogMsg( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")", 4 )
-			StripDice.LogMsg( "high icon count: "..#StripDice_options.highIcon.."   low icon count: "..#StripDice_options.lowIcon, 4 )
+				local numHigh = #StripDice_options.highIcon
+				local numLow = #StripDice_options.lowIcon
 
-			-- find who has the top n rolls
-			--print( "Find Max" )
-			StripDice.maxWho = {}
-			local who = {}
-			for rollIndex = 1, numHigh do
-				rollValue = StripDice.max[rollIndex]
-				for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
-					if( roll == rollValue and who[name] == nil ) then
-						who[name] = roll
-						table.insert( StripDice.maxWho, name )
+				--print( "I have "..#rolls.." rolls." )
+				--print( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")" )
+
+				-- find how many of what I need.
+				while( #rolls < ( numHigh + numLow ) ) do
+					if( numHigh > numLow ) then
+						--print( "High - 1" )
+						numHigh = numHigh - 1
+					elseif( numLow > numHigh ) then
+						numLow = numLow - 1
+						--print( "Low - 1" )
+					else
+						--print( "Both - 1" )
+						numLow = numLow - 1
+						numHigh = numHigh - 1
 					end
 				end
-				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
-			end
+				-- reset to at least 1
+				if( numHigh == 0 and #StripDice_options.highIcon >= 1 ) then numHigh = 1; end
+				if( numLow  == 0 and #StripDice_options.lowIcon >= 1 ) then numLow  = 1; end
 
-			--print( "Find Min" )
-			StripDice.minWho = {}
-			who = {}
-			for rollIndex = 1, numLow do
-				rollValue = StripDice.min[rollIndex]
-				for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
-					if( roll == rollValue and who[name] == nil ) then
-						who[name] = roll
-						table.insert( StripDice.minWho, name )
+				numHigh = math.min( numHigh, #StripDice_options.highIcon )
+				numLow = math.min( numLow, #StripDice_options.lowIcon )
+
+				StripDice.LogMsg( "I need "..numHigh.." high rolls, and "..numLow.." low rolls ("..( numHigh + numLow )..")", 4 )
+				StripDice.LogMsg( "high icon count: "..#StripDice_options.highIcon.."   low icon count: "..#StripDice_options.lowIcon, 4 )
+
+				-- find who has the top n rolls
+				--print( "Find Max" )
+				StripDice.maxWho = {}
+				local who = {}
+				for rollIndex = 1, numHigh do
+					rollValue = StripDice.max[rollIndex]
+					for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
+						if( roll == rollValue and who[name] == nil ) then
+							who[name] = roll
+							table.insert( StripDice.maxWho, name )
+						end
 					end
+					--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
 				end
-				--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
-			end
-			for i,name in ipairs( StripDice.minWho ) do
-				if( not name or not StripDice_options.lowIcon[i] ) then
-					StripDice.LogMsg( "Icon: "..(StripDice_options.lowIcon[i] or "nil" ) )
-					StripDice.LogMsg( "Name: "..(name or "nil" ) )
+
+				--print( "Find Min" )
+				StripDice.minWho = {}
+				who = {}
+				for rollIndex = 1, numLow do
+					rollValue = StripDice.min[rollIndex]
+					for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
+						if( roll == rollValue and who[name] == nil ) then
+							who[name] = roll
+							table.insert( StripDice.minWho, name )
+						end
+					end
+					--print( "rollIndex: "..rollIndex.." rollValue: "..rollValue )
 				end
-				StripDice.LogMsg( "Min: Put "..(StripDice_options.lowIcon[i] or "nil?").." on "..( name or "nil?"), 4 )
-				SetRaidTarget( name, ( StripDice_options.lowIcon[i] or 0 ) )
-			end
-			for i,name in ipairs( StripDice.maxWho ) do
-				StripDice.LogMsg( "Max: Put "..StripDice_options.highIcon[i].." on "..name, 4 )
-				SetRaidTarget( name, ( StripDice_options.highIcon[i] or 0 ) )
-			end
-			--print( "Find Specific" )
-			StripDice.specificWho = {}
-			for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
-				if( StripDice_options.specificRollIcon and StripDice_options.specificRollIcon[roll] ) then
-					StripDice.LogMsg( "Specific: Put "..StripDice_options.specificRollIcon[roll].." on "..name, 4 )
-					table.insert( StripDice.specificWho, name )
-					SetRaidTarget( name, ( StripDice_options.specificRollIcon[roll] or 0 ) )
+				for i,name in ipairs( StripDice.minWho ) do
+					if( not name or not StripDice_options.lowIcon[i] ) then
+						StripDice.LogMsg( "Icon: "..(StripDice_options.lowIcon[i] or "nil" ) )
+						StripDice.LogMsg( "Name: "..(name or "nil" ) )
+					end
+					StripDice.LogMsg( "Min: Put "..(StripDice_options.lowIcon[i] or "nil?").." on "..( name or "nil?"), 4 )
+					SetRaidTarget( name, ( StripDice_options.lowIcon[i] or 0 ) )
+				end
+				for i,name in ipairs( StripDice.maxWho ) do
+					StripDice.LogMsg( "Max: Put "..StripDice_options.highIcon[i].." on "..name, 4 )
+					SetRaidTarget( name, ( StripDice_options.highIcon[i] or 0 ) )
+				end
+				--print( "Find Specific" )
+				StripDice.specificWho = {}
+				for name, roll in pairs( StripDice_games[StripDice.currentGame] ) do
+					if( StripDice_options.specificRollIcon and StripDice_options.specificRollIcon[roll] ) then
+						StripDice.LogMsg( "Specific: Put "..StripDice_options.specificRollIcon[roll].." on "..name, 4 )
+						table.insert( StripDice.specificWho, name )
+						SetRaidTarget( name, ( StripDice_options.specificRollIcon[roll] or 0 ) )
+					end
 				end
 			end
 		end
